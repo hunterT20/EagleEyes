@@ -1,0 +1,30 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">EagleEyes</string>
+
+    <string name="menu_first">First</string>
+    <string name="menu_second">Second</string>
+    <string name="title_login">Đăng nhập</string>
+    <string name="khu_vuc_1">Khu vực 1</string>
+    <string name="eagleeyes">EagleEyes</string>
+    <string name="login">Login</string>
+    <string name="so_dien_thoai">Số điện thoại</string>
+    <string name="OTP">Mã OTP</string>
+    <string name="gui_hinh_anh">Gửi hình ảnh</string>
+    <string name="button_close">Button close</string>
+    <string name="image">Image</string>
+    <string name="noi_dung_chu_thich">Nội dung chú thích</string>
+    <string name="gui">Gửi</string>
+    <string name="huy">Huỷ</string>
+    <string name="abc">ABC</string>
+    <string name="ok">OK</string>
+    <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="danh_sach_khu_vuc">Danh sách khu vực</string>
+    <string name="check">Check</string>
+    <string name="chu_thich">Chú thích</string>
+    <string name="ten_minute">10 phút</string>
+    <string name="lt_10ph"><![CDATA[<10 phút]]></string>
+    <string name="ten_thirty_minute">10–30 phút</string>
+    <string name="thirty_sixty_minute">30–60 phút</string>
+    <string name="sixty_minute"><![CDATA[>60 phút]]></string>
+    <string name="right_side_menu">Right Side Menu</string>
+</resources>
