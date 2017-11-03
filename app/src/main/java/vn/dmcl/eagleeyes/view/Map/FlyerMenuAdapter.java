@@ -110,7 +110,6 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
             int pos = holder.pos;
             AreaDTO dto = arrData.get(pos);
 
-
             holder.tv_name.setText(dto.getName());
             holder.tv_position.setText(dto.getLat() + "-" + dto.getLng());
             holder.tv_count.setText("Số lượng: " + dto.getCount());

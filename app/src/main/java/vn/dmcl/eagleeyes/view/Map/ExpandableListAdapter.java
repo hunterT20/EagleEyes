@@ -27,6 +27,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<AreaDTO>> _listDataChild;
+    private List<DCheckManageFlyerDTO> list;
 
     public int getCurrentUserIndex() {
         return currentUserIndex;
@@ -48,6 +49,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     public ExpandableListAdapter(Context context, List<DCheckManageFlyerDTO> dtos) {
         this._context = context;
+        this.list = dtos;
         if (dtos != null)
             generateData(dtos);
         else {
@@ -102,6 +104,14 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             ll_menu_item.setBackgroundResource(R.color.Transparent);
 
         return convertView;
+    }
+
+    public boolean isCompleteAllArea() {
+        for (DCheckManageFlyerDTO manageFlyerDTO : list)
+            for (AreaDTO areaDTO : manageFlyerDTO.getArea())
+                if (areaDTO.getStatus() != AppConst.AreaStatus.Ended)
+                    return false;
+        return true;
     }
 
     @Override

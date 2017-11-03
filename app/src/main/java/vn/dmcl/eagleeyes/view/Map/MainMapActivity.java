@@ -428,7 +428,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
     public Location getLastKnownLoaction(boolean enabledProvidersOnly, Context context) {
         LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        Location utilLocation = null;
+        Location utilLocation;
         List<String> providers = manager.getProviders(enabledProvidersOnly);
         for (String provider : providers) {
 
@@ -505,7 +505,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                     UserAccountHelper.getIntance().setLogId("");
                     locationService.stopRecord();
                     drawerFragment.updateCurrentAreaStatus(AppConst.AreaStatus.Ended);
-                    if (drawerFragment.isCompleteAllArea()) {
+                    if (drawerFragment.isCompleteAllArea(isFlyer)) {
                         Log.e("Finish", "onSuccess: " + "flyer đã hoàn thành tất cả khu vực");
                         UserAccountHelper.getIntance().setSecureKey("");
                         startActivity(new Intent(MainMapActivity.this, LoginActivity.class));
@@ -534,6 +534,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     //region Xử lý Google Map
     private void displayAreasInMap() {
         final AreaDTO area = drawerFragment.getCurrentArea();
+        if (area == null) return;
         if (area.getId() == null) {
             ToastHelper.showShortToast("Bạn đã hoàn thành các khu vực!");
         } else if (area.getStatus() == AppConst.AreaStatus.Started) {

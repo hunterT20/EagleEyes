@@ -122,10 +122,10 @@ public class DrawerFragment extends Fragment {
     }
 
     private void findView() {
-        expListView = (ExpandableListView) view.findViewById(R.id.lvExp);
-        mListView = (ListView) view.findViewById(R.id.listViewNav);
-        tv_title = (TextView) view.findViewById(R.id.tv_title);
-        sw_list = (SwipeRefreshLayout) view.findViewById(R.id.sw_list);
+        expListView = view.findViewById(R.id.lvExp);
+        mListView = view.findViewById(R.id.listViewNav);
+        tv_title = view.findViewById(R.id.tv_title);
+        sw_list = view.findViewById(R.id.sw_list);
     }
 
     private void setListener() {
@@ -229,12 +229,10 @@ public class DrawerFragment extends Fragment {
     }
 
     // kiểm tra hoàn thành các khu vực
-    public boolean isCompleteAllArea() {
-        if (isFlyer && flyerMenuAdapter.isCompleteAllArea()) {
-            return true;
-        }
-
-        return false;
+    public boolean isCompleteAllArea(boolean isFlyer) {
+        if (isFlyer)
+            return flyerMenuAdapter.isCompleteAllArea();
+        return listAdapter.isCompleteAllArea();
     }
 
     // lắng nghe chọn khu vực nào

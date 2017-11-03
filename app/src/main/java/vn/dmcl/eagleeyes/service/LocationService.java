@@ -54,7 +54,7 @@ public class LocationService extends Service {
         Location mLastLocation;
 
         LocationListener(String provider) {
-            //Log.e(TAG, "LocationListener " + provider);
+            Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
         }
 
@@ -218,6 +218,7 @@ public class LocationService extends Service {
                         getLastLocation().getLatitude(),
                         getLastLocation().getLongitude()
                 ));
+
     }
 
     // tinh vi tri cuoi cung thay doi cua GPS hay mang
@@ -270,8 +271,8 @@ public class LocationService extends Service {
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
         if (mLocationManager == null) {
+            Log.e(TAG, "initializeLocationManager");
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
     }
