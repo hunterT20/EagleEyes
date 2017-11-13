@@ -3,6 +3,7 @@ package vn.dmcl.eagleeyes.view.Login;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
@@ -18,6 +19,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -49,6 +51,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText et_phone;
     @BindView(R.id.v_loading)
     RelativeLayout v_loading;
+    @BindView(R.id.txtv_Version)
+    TextView txtv_Version;
     TelephonyInfoHelper telephonyInfo;
     boolean doubleBackToExitPressedOnce = false;
 
@@ -58,6 +62,14 @@ public class LoginActivity extends AppCompatActivity {
         setFullScreen();
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
+            txtv_Version.setText(String.format("%s %s", "Version", packageInfo.versionName));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         if (checkLocation() && checkInternet()){
             autoLogin();

@@ -45,7 +45,6 @@ public class DialogPhoto extends Dialog implements View.OnClickListener {
     private Bitmap bitmap;
 
     public static DialogPhoto getInstance(FragmentActivity a, boolean isFullScreen) {
-
         return new DialogPhoto(a, isFullScreen);
     }
 

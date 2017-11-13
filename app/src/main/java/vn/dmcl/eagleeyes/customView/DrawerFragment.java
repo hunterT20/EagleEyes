@@ -230,9 +230,7 @@ public class DrawerFragment extends Fragment {
 
     // kiểm tra hoàn thành các khu vực
     public boolean isCompleteAllArea(boolean isFlyer) {
-        if (isFlyer)
-            return flyerMenuAdapter.isCompleteAllArea();
-        return listAdapter.isCompleteAllArea();
+        return isFlyer && flyerMenuAdapter.isCompleteAllArea();
     }
 
     // lắng nghe chọn khu vực nào

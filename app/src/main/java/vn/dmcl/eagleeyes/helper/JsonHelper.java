@@ -5,7 +5,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.google.android.gms.plus.PlusOneDummyView.TAG;
+import static android.content.ContentValues.TAG;
 
 public class JsonHelper {
 

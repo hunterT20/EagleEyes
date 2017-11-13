@@ -223,6 +223,12 @@ public class LocationService extends Service {
 
     // tinh vi tri cuoi cung thay doi cua GPS hay mang
     public Location getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+        Location location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        if (location != null) return location;
+
         if (mLocationListeners[0].mLastLocation != null) {
             if (mLocationListeners[0].mLastLocation.getLatitude() != 0 ||
                     mLocationListeners[0].mLastLocation.getLongitude() != 0)

@@ -106,13 +106,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
-    public boolean isCompleteAllArea() {
+    /*public boolean isCompleteAllArea() {
         for (DCheckManageFlyerDTO manageFlyerDTO : list)
             for (AreaDTO areaDTO : manageFlyerDTO.getArea())
                 if (areaDTO.getStatus() != AppConst.AreaStatus.Ended)
                     return false;
         return true;
-    }
+    }*/
 
     @Override
     public int getChildrenCount(int groupPosition) {
