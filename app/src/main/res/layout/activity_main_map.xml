@@ -55,6 +55,7 @@
                 android:layout_marginRight="10dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:visibility="gone"
                 app:srcCompat="@drawable/ic_camera" />
 
             <include
