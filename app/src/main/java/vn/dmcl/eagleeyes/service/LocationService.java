@@ -14,10 +14,23 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.format.Time;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.reflect.TypeToken;
 
 import vn.dmcl.eagleeyes.common.AppConst;
@@ -31,14 +44,22 @@ import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
 import vn.dmcl.eagleeyes.view.BaseActivity;
 
-public class LocationService extends Service {
+public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "BOOMBOOMTESTGPS";
-    private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 500;
-    private static final float LOCATION_DISTANCE = 15f;
     Time sentTime;
     boolean isStartRecord = false;
     private double currentDistance = 0;
+
+    private static final long UPDATE_INTERVAL = 5000;
+    private static final long FASTEST_INTERVAL = 5000;
+    private static final int REQUEST_LOCATION_PERMISSION = 100;
+
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+    private Location mLastLocation;
+    private FusedLocationProviderClient client;
+
 
     IBinder mBinder = new LocalBinder();
 
@@ -47,45 +68,6 @@ public class LocationService extends Service {
             return LocationService.this;
         }
     }
-
-    public LocaListenner mListenner;
-
-    private class LocationListener implements android.location.LocationListener {
-        Location mLastLocation;
-
-        LocationListener(String provider) {
-            Log.e(TAG, "LocationListener " + provider);
-            mLastLocation = new Location(provider);
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            Log.e(TAG, "onLocationChanged: " + location);
-            mLastLocation.set(location);
-            if (mListenner != null)
-                mListenner.onLocationChanged(location);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            //Log.e(TAG, "onProviderDisabled: " + provider);
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            //Log.e(TAG, "onProviderEnabled: " + provider);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            //Log.e(TAG, "onStatusChanged: " + provider);
-        }
-    }
-
-    LocationListener[] mLocationListeners = new LocationListener[]{
-            new LocationListener(LocationManager.GPS_PROVIDER),
-            new LocationListener(LocationManager.NETWORK_PROVIDER)
-    };
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -98,31 +80,6 @@ public class LocationService extends Service {
         super.onStartCommand(intent, flags, startId);
         // giup service khoi tao lai neu bi giet
         return START_STICKY;
-    }
-
-    @Override
-    public void onCreate() {
-        Log.e(TAG, "onCreate");
-        initializeLocationManager();
-        try {
-            mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    mLocationListeners[1]);
-        } catch (SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
-        try {
-            mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    mLocationListeners[0]);
-        } catch (SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
-        }
-        calcuDistance();
     }
 
     Location prevLocation;
@@ -223,18 +180,7 @@ public class LocationService extends Service {
 
     // tinh vi tri cuoi cung thay doi cua GPS hay mang
     public Location getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return null;
-        }
-        Location location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-        if (location != null) return location;
-
-        if (mLocationListeners[0].mLastLocation != null) {
-            if (mLocationListeners[0].mLastLocation.getLatitude() != 0 ||
-                    mLocationListeners[0].mLastLocation.getLongitude() != 0)
-                return mLocationListeners[0].mLastLocation;
-            else return mLocationListeners[1].mLastLocation;
-        } else return mLocationListeners[1].mLastLocation;
+        return mLastLocation;
     }
 
     public void startRecord() {
@@ -254,36 +200,114 @@ public class LocationService extends Service {
         isStartRecord = false;
     }
 
+    private boolean isPlayServicesAvailable() {
+        return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(BaseActivity.getCurrentActivity())
+                == ConnectionResult.SUCCESS;
+    }
+
+    private boolean isGpsOn() {
+        LocationManager manager = (LocationManager) BaseActivity.getCurrentActivity().getSystemService(LOCATION_SERVICE);
+        assert manager != null;
+        return manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private void setUpLocationClientIfNeeded() {
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(BaseActivity.getCurrentActivity())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
+        if (client == null){
+            client = LocationServices.getFusedLocationProviderClient(BaseActivity.getCurrentActivity());
+        }
+    }
+
+    private void buildLocationRequest() {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+    }
+
+    private LocationCallback callback = new LocationCallback(){
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            mLastLocation = locationResult.getLastLocation();
+        }
+    };
+
+    protected void startLocationUpdates() {
+        if (ContextCompat.checkSelfPermission(BaseActivity.getCurrentActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(BaseActivity.getCurrentActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        client.requestLocationUpdates(mLocationRequest,callback,null);
+    }
+
+    protected void stopLocationUpdates() {
+        client.removeLocationUpdates(callback);
+    }
+
     @Override
-    public void onDestroy() {
-        Log.e(TAG, "onDestroy");
-        super.onDestroy();
-        if (mLocationManager != null) {
-            for (LocationListener mLocationListener : mLocationListeners) {
-                try {
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    public void onConnected(Bundle bundle) {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(BaseActivity.getCurrentActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        client.getLastLocation().addOnSuccessListener(BaseActivity.getCurrentActivity(), new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    if (!isGpsOn()){
+                        Toast.makeText(BaseActivity.getCurrentActivity(), "Bạn chưa mở GPS! Mở GPS để xác định địa điểm chính xác!", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    mLocationManager.removeUpdates(mLocationListener);
-                } catch (Exception ex) {
-                    Log.i(TAG, "fail to remove location listners, ignore", ex);
+                    mLastLocation = location;
+                    startLocationUpdates();
+                    calcuDistance();
                 }
             }
+        });
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(TAG, "onConnectionFailed: " + connectionResult.getErrorMessage());
+    }
+
+    @Override
+    public void onCreate() {
+        if (isPlayServicesAvailable()) {
+            setUpLocationClientIfNeeded();
+            buildLocationRequest();
+        }
+
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
         }
     }
 
-    public void setLocationListenner(LocaListenner listenner) {
-        mListenner = listenner;
-    }
-
-    private void initializeLocationManager() {
-        if (mLocationManager == null) {
-            Log.e(TAG, "initializeLocationManager");
-            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mGoogleApiClient != null
+                && mGoogleApiClient.isConnected()) {
+            stopLocationUpdates();
+            mGoogleApiClient.disconnect();
+            mGoogleApiClient = null;
         }
-    }
-
-    public interface LocaListenner {
-        void onLocationChanged(Location location);
     }
 }

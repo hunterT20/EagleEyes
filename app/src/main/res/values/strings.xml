@@ -27,4 +27,5 @@
     <string name="thirty_sixty_minute">30–60 phút</string>
     <string name="sixty_minute"><![CDATA[>60 phút]]></string>
     <string name="right_side_menu">Right Side Menu</string>
+    <string name="dmcl">DMCL</string>
 </resources>

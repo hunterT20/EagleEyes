@@ -6,12 +6,16 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.dto.ConfigDTO;
+import vn.dmcl.eagleeyes.dto.SessionDTO;
 
 import static android.content.ContentValues.TAG;
+import static android.content.Context.MODE_PRIVATE;
 
 public class UserAccountHelper {
     @SuppressLint("StaticFieldLeak")
@@ -48,7 +52,6 @@ public class UserAccountHelper {
         return mPrefs.getString("Key", "");
     }
 
-
     public void setLogId(String logId) {
         SharedPreferences.Editor prefsEditor = mPrefs.edit();
         prefsEditor.putString("LogID", logId);
@@ -65,10 +68,19 @@ public class UserAccountHelper {
         prefsEditor.apply();
     }
 
+    public void setPhoneNumber(String Phone) {
+        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+        prefsEditor.putString("Phone", Phone);
+        prefsEditor.apply();
+    }
+
+    public String getPhoneNumber() {
+        return mPrefs.getString("Phone", "");
+    }
+
     public int getUserType() {
         return mPrefs.getInt("UserType", 0);
     }
-
 
     public void updateConfig(List<ConfigDTO> list) {
         try {

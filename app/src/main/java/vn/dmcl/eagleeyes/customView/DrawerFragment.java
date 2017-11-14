@@ -20,9 +20,9 @@ import vn.dmcl.eagleeyes.dto.AreaFDTO;
 import vn.dmcl.eagleeyes.dto.DCheckManageFlyerDTO;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.R;
-import vn.dmcl.eagleeyes.view.Map.ExpandableListAdapter;
-import vn.dmcl.eagleeyes.view.Map.FlyerMenuAdapter;
-import vn.dmcl.eagleeyes.view.Map.MainMapActivity;
+import vn.dmcl.eagleeyes.view.map.ExpandableListAdapter;
+import vn.dmcl.eagleeyes.view.map.FlyerMenuAdapter;
+import vn.dmcl.eagleeyes.view.map.MainMapActivity;
 
 /**
  * Created by MyPC on 18/10/2016.

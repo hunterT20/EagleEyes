@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.view.Login;
+package vn.dmcl.eagleeyes.view.login;
 
 import android.Manifest;
 import android.content.Context;
@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -40,19 +41,20 @@ import vn.dmcl.eagleeyes.helper.NetworkHelper;
 import vn.dmcl.eagleeyes.helper.TelephonyInfoHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
-import vn.dmcl.eagleeyes.view.Map.MainMapActivity;
+import vn.dmcl.eagleeyes.view.map.MainMapActivity;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
 
-    @BindView(R.id.et_password)
-    EditText et_password;
-    @BindView(R.id.et_phone)
-    EditText et_phone;
-    @BindView(R.id.v_loading)
-    RelativeLayout v_loading;
-    @BindView(R.id.txtv_Version)
-    TextView txtv_Version;
+    @BindView(R.id.et_password)     EditText et_password;
+    @BindView(R.id.et_phone)        EditText et_phone;
+    @BindView(R.id.v_loading)       RelativeLayout v_loading;
+    @BindView(R.id.txtv_Version)    TextView txtv_Version;
+    @BindView(R.id.Login_Main)      LinearLayout Login_Main;
+    @BindView(R.id.Login_Session)   LinearLayout Login_Session;
+    @BindView(R.id.txtv_PhoneNumber)    TextView txtv_PhoneNumber;
+    @BindView(R.id.txtv_TypeUser)       TextView txtv_TypeUser;
+
     TelephonyInfoHelper telephonyInfo;
     boolean doubleBackToExitPressedOnce = false;
 
@@ -63,67 +65,93 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        PackageInfo packageInfo = null;
+        PackageInfo packageInfo;
         try {
-            packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
+            packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             txtv_Version.setText(String.format("%s %s", "Version", packageInfo.versionName));
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
 
-        if (checkLocation() && checkInternet()){
-            autoLogin();
-        }
         if (checkPermission()) {
             telephonyInfo = TelephonyInfoHelper.getInstance(this);
             setViewData();
         }
+
+        if (checkLocation() && checkInternet()) {
+            checkToken();
+        }
+
         LoadingConfig();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        if (checkLocation() && checkInternet()){
-            autoLogin();
+        if (checkLocation() && checkInternet()) {
+            checkToken();
         }
     }
 
     @OnClick(R.id.tv_login)
     public void onLoginClick() {
         v_loading.setVisibility(View.VISIBLE);
-        if (UserAccountHelper.getIntance().getSecureKey().contentEquals("")) {
-            DataServiceProvider<ResultDTO<SessionDTO>> Login = new DataServiceProvider<>(new TypeToken<ResultDTO<SessionDTO>>() {
-            }.getType());
-            Login.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<SessionDTO>>() {
-                @Override
-                public void onSuccess(ResultDTO<SessionDTO> responseData) {
-                    if (responseData.isResult()) {
-                        Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
-                        UserAccountHelper.getIntance().setSecureKey(responseData.getData().getKey());
-                        UserAccountHelper.getIntance().setUserType(responseData.getData().getUserType());
-                        if (responseData.getData().getUserType() == AppConst.UserType.FLYER)
-                            intent.putExtra("IsFlyer", true);
-                        else intent.putExtra("IsFlyer", false);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    } else{
-                        ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + responseData.getMessage());
-                        UserAccountHelper.getIntance().setSecureKey("");
-                    }
-                    v_loading.setVisibility(View.GONE);
-                }
 
-                @Override
-                public void onFailure(String errorMessage) {
-                    ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + errorMessage);
+        DataServiceProvider<ResultDTO<SessionDTO>> Login = new DataServiceProvider<>(new TypeToken<ResultDTO<SessionDTO>>() {
+        }.getType());
+        Login.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<SessionDTO>>() {
+            @Override
+            public void onSuccess(ResultDTO<SessionDTO> responseData) {
+                if (responseData.isResult()) {
+                    Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
+                    UserAccountHelper.getIntance().setSecureKey(responseData.getData().getKey());
+                    UserAccountHelper.getIntance().setUserType(responseData.getData().getUserType());
+                    UserAccountHelper.getIntance().setPhoneNumber(et_phone.getText().toString());
+                    if (responseData.getData().getUserType() == AppConst.UserType.FLYER)
+                        intent.putExtra("IsFlyer", true);
+                    else intent.putExtra("IsFlyer", false);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + responseData.getMessage());
                     UserAccountHelper.getIntance().setSecureKey("");
-                    v_loading.setVisibility(View.GONE);
                 }
-            });
-            Login.getData(FunctionConst.Login, AppConst.AsyncMethod.POST, JsonHelper.getIntance().Login(et_phone.getText().toString(), et_password.getText().toString()));
-        }
+                v_loading.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + errorMessage);
+                UserAccountHelper.getIntance().setSecureKey("");
+                v_loading.setVisibility(View.GONE);
+            }
+        });
+
+        Login.getData(
+                FunctionConst.Login,
+                AppConst.AsyncMethod.POST,
+                JsonHelper.getIntance().Login(
+                        et_phone.getText().toString(),
+                        et_password.getText().toString()
+                )
+        );
+    }
+
+    @OnClick(R.id.btn_Login_Session)
+    public void onLoginSessionClick(){
+        checkLogKey();
+    }
+
+    @OnClick(R.id.btn_Login_Other)
+    public void onLoginOtherClick(){
+        Login_Session.setVisibility(View.GONE);
+        Login_Main.setVisibility(View.VISIBLE);
+    }
+
+    @OnClick(R.id.txtv_Login_Session)
+    public void onLoginSessionShowClick(){
+        checkToken();
     }
 
     private void setViewData() {
@@ -135,23 +163,30 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void autoLogin() {
+    private void checkToken() {
         if (!UserAccountHelper.getIntance().getSecureKey().contentEquals("")) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (!UserAccountHelper.getIntance().getSecureKey().contentEquals("")) {
-                        checkLogKey();
-                    }
+                    LoginWithSession();
                 }
             }, 500);
         }
     }
 
     public boolean checkPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, AppConst.PerLocaRequestCode);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            }, AppConst.PerLocaRequestCode);
 
         }
         return true;
@@ -190,9 +225,11 @@ public class LoginActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
-                } else{
+                } else {
                     ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + responseData.getMessage());
                     UserAccountHelper.getIntance().setSecureKey("");
+                    Login_Main.setVisibility(View.VISIBLE);
+                    Login_Session.setVisibility(View.GONE);
                 }
                 v_loading.setVisibility(View.GONE);
             }
@@ -206,6 +243,14 @@ public class LoginActivity extends AppCompatActivity {
         });
         CheckKey.getData(FunctionConst.CheckKey, AppConst.AsyncMethod.GET,
                 JsonHelper.getIntance().CheckKey(UserAccountHelper.getIntance().getSecureKey()));
+    }
+
+    private void LoginWithSession(){
+        Login_Main.setVisibility(View.GONE);
+        Login_Session.setVisibility(View.VISIBLE);
+
+        txtv_PhoneNumber.setText(String.format("Phone: %s", UserAccountHelper.getIntance().getPhoneNumber()));
+        txtv_TypeUser.setText(UserAccountHelper.getIntance().getUserType() == AppConst.UserType.FLYER ? "Type: Flyer" : "Type: DCheck");
     }
 
     public boolean checkLocation() {
@@ -227,7 +272,7 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(myIntent);
                 }
             }, false);
-        }else {
+        } else {
             return true;
         }
         return false;
@@ -241,7 +286,7 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 }
             }, false);
-        }else {
+        } else {
             return true;
         }
         return false;
@@ -265,7 +310,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }, 2000);
     }
-
 
     private void LoadingConfig() {
         if (UserAccountHelper.getIntance().getSecureKey().equals(""))
@@ -301,5 +345,4 @@ public class LoginActivity extends AppCompatActivity {
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
     }
-
 }

@@ -1,8 +1,6 @@
-package vn.dmcl.eagleeyes.view.Map;
+package vn.dmcl.eagleeyes.view.map;
 
 import android.Manifest;
-import android.animation.IntEvaluator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
@@ -17,7 +15,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,16 +22,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -62,6 +60,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.common.FunctionConst;
@@ -83,54 +84,52 @@ import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
 import vn.dmcl.eagleeyes.service.LocationService;
 import vn.dmcl.eagleeyes.view.BaseActivity;
-import vn.dmcl.eagleeyes.view.Login.LoginActivity;
+import vn.dmcl.eagleeyes.view.login.LoginActivity;
 
 import static vn.dmcl.eagleeyes.customView.DrawerFragment.MenuListener;
 import static vn.dmcl.eagleeyes.customView.DrawerFragment.NavCallback;
 
-public class MainMapActivity extends BaseActivity implements OnMapReadyCallback, NavCallback, View.OnClickListener, MenuListener {
+public class MainMapActivity extends BaseActivity implements OnMapReadyCallback, NavCallback, MenuListener {
     LocationService locationService;
-    boolean mBounded;
-
     GoogleMap googleMap;
-    private DrawerLayout drawer;
-    private ActionBarDrawerToggle mDrawerToggle;
-    boolean isStart = false;
     Menu menu;
-    boolean isFlyer;
+
+    @BindView(R.id.drawer) DrawerLayout drawer;
+    @BindView(R.id.v_loading) RelativeLayout v_loading;
+    @BindView(R.id.tv_currentArea) TextView tv_currentArea;
+    @BindView(R.id.ll_marker_des) LinearLayout ll_marker_des;
+    @BindView(R.id.fab_TakePhoto)
+    FloatingActionButton fab_TakePhoto;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+
+    private ActionBarDrawerToggle mDrawerToggle;
     DrawerFragment drawerFragment;
     Circle currentCircle;
     Marker currentMarker;
-    RelativeLayout v_loading;
-    TextView tv_currentArea;
-    ImageView iv_photo;
+    MapFragment mapFragment;
+
     List<AreaDTO> areaDTOList;
     List<DCheckManageFlyerDTO> dCheckManageFlyerDTOs;
     List<Circle> currentDCircle;
     List<Marker> currentDMarker;
     List<Marker> MarkersText = new ArrayList<>();
+
     Polyline currentPolyline;
-    boolean doubleBackToExitPressedOnce = false;
-    LinearLayout ll_marker_des;
+    private Uri imageUri;
+    private int count = 0;
+    private boolean doubleBackToExitPressedOnce = false;
+    private boolean isStart = false;
+    private boolean isFlyer;
 
     ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceDisconnected(ComponentName name) {
-            //Toast.makeText(MainMapActivity.this, "Service is disconnected", 1000).show();
-            mBounded = false;
             locationService = null;
         }
 
         public void onServiceConnected(ComponentName name, IBinder service) {
-            //Toast.makeText(MainMapActivity.this, "Service is connected", 1000).show();
-            mBounded = true;
             LocationService.LocalBinder mLocalBinder = (LocationService.LocalBinder) service;
             locationService = mLocalBinder.getServiceInstance();
-            locationService.setLocationListenner(new LocationService.LocaListenner() {
-                @Override
-                public void onLocationChanged(Location location) {
-                    Log.e("CON", "Location changed to " + location.getLatitude() + "-" + location.getLongitude());
-                }
-            });
         }
     };
 
@@ -138,10 +137,10 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map);
+        ButterKnife.bind(this);
         isFlyer = getIntent().getBooleanExtra("IsFlyer", true);
 
-        findView();
-        setListenner();
+        addViews();
         requestPermission();
         connectoService();
 
@@ -164,27 +163,25 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     }
 
     //region Xử lý UI
-    MapFragment mapFragment;
-
-    private void findView() {
+    private void addViews() {
         mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        drawer = findViewById(R.id.drawer);
-        v_loading = findViewById(R.id.v_loading);
-        tv_currentArea = findViewById(R.id.tv_currentArea);
-        iv_photo = findViewById(R.id.iv_photo);
-        ll_marker_des = findViewById(R.id.ll_marker_des);
     }
 
-    private void setListenner() {
-        iv_photo.setOnClickListener(this);
+    @OnClick(R.id.fab_TakePhoto)
+    public void onTakePhotoClick(){
+        String _path = Environment.getExternalStorageDirectory() + File.separator + "photo_temp.jpg";
+        File file = new File(_path);
+        imageUri = Uri.fromFile(file);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, AppConst.CameraRequestCode);
     }
 
     private void setupDrawerLayout() {
         // Instantiate the Drawer Toggle
-        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, R.drawable.ic_menu_area, R.string.app_name, R.string.app_name) {
-
+        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.app_name, R.string.app_name) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -205,11 +202,9 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             public boolean onOptionsItemSelected(MenuItem item) {
                 if (item != null && item.getItemId() == R.id.btnMyMenu) {
                     if (!isStart) {
-                        // bắt đầu ghi nhận địa điểm
                         startRecordLocation();
 
                     } else {
-                        // dừng ghi nhận địa điểm
                         stopRecordLocation();
                     }
                     return true;
@@ -217,31 +212,29 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             }
         };
 
-        // Set the Toggle on the Drawer, And tell the Action Bar Up Icon to show
-        drawer.setDrawerListener(mDrawerToggle);
+        drawer.addDrawerListener(mDrawerToggle);
+        setSupportActionBar(toolbar);
         if (getSupportActionBar() == null) return;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_area);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
 
         this.googleMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         googleMap.setMyLocationEnabled(true);
-
         googleMap.getUiSettings().setMapToolbarEnabled(false);
-
 
         if (locationService != null) {
             Location last = locationService.getLastLocation();
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(last.getLatitude(), last.getLongitude())));
         } else {
-            Location my = getLastKnownLoaction(false, this);
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(10.754252, 106.664683), 15));
         }
 
@@ -273,9 +266,11 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                 return null;
             }
         });
-        googleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+
+        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
-            public void onCameraChange(CameraPosition cameraPosition) {
+            public void onCameraMove() {
+                CameraPosition cameraPosition = googleMap.getCameraPosition();
                 int MaxCamera = 19, MinCamera = 17;
                 if (cameraPosition.zoom < MinCamera)
                     for (int i = 0; i < MarkersText.size(); i++)
@@ -307,7 +302,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.my_right_side_menu, menu);
         this.menu = menu;
         if (isStart) {
@@ -318,28 +312,13 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // Handle the drawer Actions
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.new_game) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        return mDrawerToggle.onOptionsItemSelected(item) || id == R.id.new_game || super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
-        // dừng service
         if (doubleBackToExitPressedOnce || drawer.isDrawerOpen(GravityCompat.START)) {
             if (drawer.isDrawerOpen(GravityCompat.START))
                 drawer.closeDrawers();
@@ -390,24 +369,26 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         drawer.closeDrawers();
     }
 
-    //endregion
 
-    //region Xử lý quyền
     private void requestPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, AppConst.PerLocaRequestCode);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.CAMERA
+            }, AppConst.PerLocaRequestCode);
         }
     }
 
-
-    @SuppressLint("NewApi")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == AppConst.PerLocaRequestCode) {
-            if (permissions.length == 1 &&
-                    Objects.equals(permissions[0], Manifest.permission.ACCESS_FINE_LOCATION) &&
+            if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
                 googleMap.setMyLocationEnabled(true);
@@ -417,28 +398,10 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         }
     }
 
-    //endregion
-
-    //region Xử lý Service
 
     private void connectoService() {
         Intent intent = new Intent(this, LocationService.class);
         bindService(intent, mConnection, BIND_AUTO_CREATE);
-    }
-
-    public Location getLastKnownLoaction(boolean enabledProvidersOnly, Context context) {
-        LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        Location utilLocation;
-        List<String> providers = manager.getProviders(enabledProvidersOnly);
-        for (String provider : providers) {
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return null;
-            }
-            utilLocation = manager.getLastKnownLocation(provider);
-            if (utilLocation != null) return utilLocation;
-        }
-        return null;
     }
 
     private void startRecordLocation() {
@@ -470,7 +433,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                         tv_currentArea.setVisibility(View.VISIBLE);
                         tv_currentArea.setText(responseData.getData().getArea().getName());
                     }
-                    iv_photo.setVisibility(View.VISIBLE);
+                    fab_TakePhoto.setVisibility(View.VISIBLE);
                 } else
                     ToastHelper.showShortToast("Bắt đầu thất bại. Lỗi: " + responseData.getMessage());
                 v_loading.setVisibility(View.GONE);
@@ -512,7 +475,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                         finish();
                     }
                     tv_currentArea.setVisibility(View.GONE);
-                    iv_photo.setVisibility(View.GONE);
+                    fab_TakePhoto.setVisibility(View.GONE);
                 } else ToastHelper.showShortToast(responseData.getMessage());
                 v_loading.setVisibility(View.GONE);
             }
@@ -529,9 +492,8 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                         locationService.getLastLocation().getLongitude(),
                         UserAccountHelper.getIntance().getSecureKey()));
     }
-    //endregion
 
-    //region Xử lý Google Map
+
     private void displayAreasInMap() {
         final AreaDTO area = drawerFragment.getCurrentArea();
         if (area == null) return;
@@ -551,7 +513,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             }, 1000);
             tv_currentArea.setVisibility(View.VISIBLE);
             tv_currentArea.setText(area.getName());
-            iv_photo.setVisibility(View.VISIBLE);
+            fab_TakePhoto.setVisibility(View.VISIBLE);
         }
         if (!isFlyer)
             LoadFlyerArea(area);
@@ -588,15 +550,14 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             polylineOptions.add(new LatLng(item.getLat(), item.getLng()));
         currentPolyline = googleMap.addPolyline(polylineOptions);
         // Vẽ các marker location flyer đã đi qua
-        List<Marker> list = new ArrayList<>();
-        double scalePercent = 10f;
+        //double scalePercent = 10f;
         IconGenerator iconFactory = new IconGenerator(this);
         iconFactory.setStyle(R.style.iconGenText);
-        for (int i = 0; i < flyerLogDTO.getLocation().size(); i++)
+        /*for (int i = 0; i < flyerLogDTO.getLocation().size(); i++)
             if (flyerLogDTO.getLocation().get(i).getTime() > 1000)
-                scalePercent = 50f;
+                scalePercent = 50f;*/
         for (int i = 0; i < flyerLogDTO.getLocation().size(); i++) {
-            String title = "";
+            String title;
             LocationDTO locationDTO = flyerLogDTO.getLocation().get(i);
             if (i == 0) {
                 title = "Điểm bắt đầu";
@@ -648,7 +609,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     }
 
 
-    public void animateCircle(LatLng latLng, final double radius) {
+    /*public void animateCircle(LatLng latLng, final double radius) {
         final Circle circle = googleMap.addCircle(new CircleOptions().center(latLng)
                 .strokeColor(Color.argb(99, 37, 144, 255))
                 .fillColor(Color.argb(30, 96, 152, 207))
@@ -657,7 +618,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        vAnimator.setRepeatMode(ValueAnimator.RESTART);  /* PULSE */
+        vAnimator.setRepeatMode(ValueAnimator.RESTART);  *//* PULSE *//*
         vAnimator.setIntValues(0, (int) radius);
         vAnimator.setDuration(3000);
         vAnimator.setEvaluator(new IntEvaluator());
@@ -671,8 +632,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         });
         vAnimator.start();
     }
-
-    int count = 0;
+*/
 
     private void beginAnimation() {
         if (count == currentDMarker.size())
@@ -690,9 +650,8 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             }
         }, 100);
     }
-    //endregion
 
-    //region Load dữ liệu ban đầu
+
     private void LoadFlyerData() {
         DataServiceProvider<ResultDTO<AreaFDTO>> GetListArea = new DataServiceProvider<>(new TypeToken<ResultDTO<AreaFDTO>>() {
         }.getType());
@@ -775,26 +734,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.iv_photo:
-                takePhoto();
-                break;
-        }
-    }
-
-    private Uri imageUri;
-
-    private void takePhoto() {
-        String _path = Environment.getExternalStorageDirectory() + File.separator + "photo_temp.jpg";
-        File file = new File(_path);
-        imageUri = Uri.fromFile(file);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        startActivityForResult(intent, AppConst.CameraRequestCode);
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AppConst.CameraRequestCode && resultCode == Activity.RESULT_OK) {
             try {
@@ -811,9 +750,8 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
-    //endregion
 
-    //region Notify
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -826,6 +764,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         super.onResume();
         if (isStart) {
             NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            assert nMgr != null;
             nMgr.cancel(1001);
         }
     }
@@ -872,5 +811,4 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         else LoadDCheckData();
 
     }
-    //endregion
 }

@@ -17,7 +17,7 @@ import vn.dmcl.eagleeyes.dto.DataObjectSend;
 import vn.dmcl.eagleeyes.dto.ResultDTO;
 import vn.dmcl.eagleeyes.view.BaseActivity;
 import vn.dmcl.eagleeyes.view.BaseApplication;
-import vn.dmcl.eagleeyes.view.Login.LoginActivity;
+import vn.dmcl.eagleeyes.view.login.LoginActivity;
 
 public class DataServiceProvider<T> {
 

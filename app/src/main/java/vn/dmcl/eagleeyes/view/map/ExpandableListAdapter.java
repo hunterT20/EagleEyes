@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.view.Map;
+package vn.dmcl.eagleeyes.view.map;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
