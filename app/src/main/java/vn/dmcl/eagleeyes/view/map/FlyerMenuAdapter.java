@@ -57,7 +57,7 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ShowHolder holder = null;
+        ShowHolder holder;
 
         if (convertView == null) {
             convertView = activity.getLayoutInflater().inflate(R.layout.list_item, parent, false);

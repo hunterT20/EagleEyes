@@ -23,6 +23,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -56,8 +57,11 @@ import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.ui.IconGenerator;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import butterknife.BindView;
@@ -171,11 +175,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
     @OnClick(R.id.fab_TakePhoto)
     public void onTakePhotoClick(){
-        String _path = Environment.getExternalStorageDirectory() + File.separator + "photo_temp.jpg";
-        File file = new File(_path);
-        imageUri = Uri.fromFile(file);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         startActivityForResult(intent, AppConst.CameraRequestCode);
     }
 
@@ -737,8 +737,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AppConst.CameraRequestCode && resultCode == Activity.RESULT_OK) {
             try {
-                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                Bitmap bitmap = ImageHelper.handleSamplingAndRotationBitmap(this, imageUri);
+                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
                 DialogPhoto dialogPhoto = DialogPhoto.getInstance(this, true);
                 dialogPhoto.show();
                 dialogPhoto.setImageData(locationService, bitmap);
