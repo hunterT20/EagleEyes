@@ -32,11 +32,13 @@
             android:value="AIzaSyDmkVfrls1-WxTyh0yRx88CPdMlKEe1Hbc" />
 
         <activity
-            android:name=".view.map.MainMapActivity" />
+            android:name=".view.map.MainMapActivity"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name=".view.login.LoginActivity"
-            android:theme="@style/AppTheme_FullScreen">
+            android:theme="@style/AppTheme_FullScreen"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
