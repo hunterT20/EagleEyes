@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "338654189304",
+    "firebase_url": "https://dmclmobileapp.firebaseio.com",
+    "project_id": "dmclmobileapp",
+    "storage_bucket": "dmclmobileapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338654189304:android:18aa0e65f22fd15a",
+        "android_client_info": {
+          "package_name": "vn.dmcl.eagleeyes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338654189304-5f53ut652llf6hcg6hh5f0k1bl9s4eu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACN_Jt5GLPNYpumQlfdLRUg_Ku499VDek"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

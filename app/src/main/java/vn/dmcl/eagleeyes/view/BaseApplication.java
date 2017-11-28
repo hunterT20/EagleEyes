@@ -6,6 +6,9 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
 import vn.dmcl.eagleeyes.helper.NetworkHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
@@ -18,6 +21,11 @@ public class BaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        final Fabric fabric = new Fabric.Builder(this)
+                .kits(new Crashlytics())
+                .debuggable(true)
+                .build();
+        Fabric.with(fabric);
         mContext = this;
         NetworkHelper.initContext(this);
         ToastHelper.initContext(this);
@@ -26,6 +34,7 @@ public class BaseApplication extends Application {
             @Override
             public void uncaughtException(Thread thread, Throwable e) {
                 Log.e("Có lỗi đột xuất", e.getMessage());
+                Crashlytics.log(e.getMessage());
                 handleUncaughtException(thread, e);
             }
         });
@@ -39,6 +48,7 @@ public class BaseApplication extends Application {
 
     public void handleUncaughtException(Thread thread, Throwable e) {
         Log.e("Có lỗi đột xuất", e.getMessage());
+        Crashlytics.log(e.getMessage());
         e.printStackTrace();
 
         /*Intent intent = new Intent(this, HomeActivity.class);

@@ -15,30 +15,27 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -56,17 +53,13 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.ui.IconGenerator;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.fabric.sdk.android.Fabric;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.common.FunctionConst;
@@ -81,7 +74,6 @@ import vn.dmcl.eagleeyes.dto.LocationDTO;
 import vn.dmcl.eagleeyes.dto.ResultDTO;
 import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DateTimeHelper;
-import vn.dmcl.eagleeyes.helper.ImageHelper;
 import vn.dmcl.eagleeyes.helper.JsonHelper;
 import vn.dmcl.eagleeyes.helper.MarkerHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
@@ -98,10 +90,14 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     GoogleMap googleMap;
     Menu menu;
 
-    @BindView(R.id.drawer) DrawerLayout drawer;
-    @BindView(R.id.v_loading) RelativeLayout v_loading;
-    @BindView(R.id.tv_currentArea) TextView tv_currentArea;
-    @BindView(R.id.ll_marker_des) LinearLayout ll_marker_des;
+    @BindView(R.id.drawer)
+    DrawerLayout drawer;
+    @BindView(R.id.v_loading)
+    RelativeLayout v_loading;
+    @BindView(R.id.tv_currentArea)
+    TextView tv_currentArea;
+    @BindView(R.id.ll_marker_des)
+    LinearLayout ll_marker_des;
     @BindView(R.id.fab_TakePhoto)
     FloatingActionButton fab_TakePhoto;
     @BindView(R.id.toolbar)
@@ -120,7 +116,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     List<Marker> MarkersText = new ArrayList<>();
 
     Polyline currentPolyline;
-    private Uri imageUri;
     private int count = 0;
     private boolean doubleBackToExitPressedOnce = false;
     private boolean isStart = false;
@@ -141,6 +136,11 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map);
+        final Fabric fabric = new Fabric.Builder(this)
+                .kits(new Crashlytics())
+                .debuggable(true)
+                .build();
+        Fabric.with(fabric);
         ButterKnife.bind(this);
         isFlyer = getIntent().getBooleanExtra("IsFlyer", true);
 
@@ -174,7 +174,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     }
 
     @OnClick(R.id.fab_TakePhoto)
-    public void onTakePhotoClick(){
+    public void onTakePhotoClick() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, AppConst.CameraRequestCode);
     }
@@ -448,7 +448,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         long UserID = -1;
         if (!isFlyer) UserID = dCheckManageFlyerDTOs.get(0).getFlyerId();
         StartLog.getData(FunctionConst.StartLog, AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().StartLog(UserID,drawerFragment.getCurrentArea().getId(),
+                JsonHelper.getIntance().StartLog(UserID, drawerFragment.getCurrentArea().getId(),
                         locationService.getLastLocation().getLatitude(),
                         locationService.getLastLocation().getLongitude(),
                         UserAccountHelper.getIntance().getSecureKey()));
@@ -469,7 +469,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                     locationService.stopRecord();
                     drawerFragment.updateCurrentAreaStatus(AppConst.AreaStatus.Ended);
                     if (drawerFragment.isCompleteAllArea(isFlyer)) {
-                        Log.e("Finish", "onSuccess: " + "flyer đã hoàn thành tất cả khu vực");
                         UserAccountHelper.getIntance().setSecureKey("");
                         startActivity(new Intent(MainMapActivity.this, LoginActivity.class));
                         finish();
