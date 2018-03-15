@@ -57,8 +57,8 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.txtv_PhoneNumber)    TextView txtv_PhoneNumber;
     @BindView(R.id.txtv_TypeUser)       TextView txtv_TypeUser;
 
-    TelephonyInfoHelper telephonyInfo;
-    boolean doubleBackToExitPressedOnce = false;
+    private TelephonyInfoHelper telephonyInfo;
+    private boolean doubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

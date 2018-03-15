@@ -90,18 +90,12 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     GoogleMap googleMap;
     Menu menu;
 
-    @BindView(R.id.drawer)
-    DrawerLayout drawer;
-    @BindView(R.id.v_loading)
-    RelativeLayout v_loading;
-    @BindView(R.id.tv_currentArea)
-    TextView tv_currentArea;
-    @BindView(R.id.ll_marker_des)
-    LinearLayout ll_marker_des;
-    @BindView(R.id.fab_TakePhoto)
-    FloatingActionButton fab_TakePhoto;
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
+    @BindView(R.id.drawer)          DrawerLayout drawer;
+    @BindView(R.id.v_loading)       RelativeLayout v_loading;
+    @BindView(R.id.tv_currentArea)  TextView tv_currentArea;
+    @BindView(R.id.ll_marker_des)   LinearLayout ll_marker_des;
+    @BindView(R.id.fab_TakePhoto)   FloatingActionButton fab_TakePhoto;
+    @BindView(R.id.toolbar)         Toolbar toolbar;
 
     private ActionBarDrawerToggle mDrawerToggle;
     DrawerFragment drawerFragment;
@@ -607,32 +601,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         beginAnimation();
     }
 
-
-    /*public void animateCircle(LatLng latLng, final double radius) {
-        final Circle circle = googleMap.addCircle(new CircleOptions().center(latLng)
-                .strokeColor(Color.argb(99, 37, 144, 255))
-                .fillColor(Color.argb(30, 96, 152, 207))
-                .strokeWidth(1f)
-                .radius(radius));
-
-        ValueAnimator vAnimator = new ValueAnimator();
-        vAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        vAnimator.setRepeatMode(ValueAnimator.RESTART);  *//* PULSE *//*
-        vAnimator.setIntValues(0, (int) radius);
-        vAnimator.setDuration(3000);
-        vAnimator.setEvaluator(new IntEvaluator());
-        vAnimator.setInterpolator(new LinearInterpolator());
-        vAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                float animatedFraction = valueAnimator.getAnimatedFraction();
-                circle.setRadius(animatedFraction * radius);
-            }
-        });
-        vAnimator.start();
-    }
-*/
-
     private void beginAnimation() {
         if (count == currentDMarker.size())
             return;
@@ -649,7 +617,6 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             }
         }, 100);
     }
-
 
     private void LoadFlyerData() {
         DataServiceProvider<ResultDTO<AreaFDTO>> GetListArea = new DataServiceProvider<>(new TypeToken<ResultDTO<AreaFDTO>>() {
