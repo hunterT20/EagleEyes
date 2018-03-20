@@ -262,18 +262,15 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             return;
         }
 
-        client.getLastLocation().addOnSuccessListener(BaseActivity.getCurrentActivity(), new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location != null) {
-                    if (!isGpsOn()){
-                        Toast.makeText(BaseActivity.getCurrentActivity(), "Bạn chưa mở GPS! Mở GPS để xác định địa điểm chính xác!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    mLastLocation = location;
-                    startLocationUpdates();
-                    calcuDistance();
+        client.getLastLocation().addOnSuccessListener(BaseActivity.getCurrentActivity(), location -> {
+            if (location != null) {
+                if (!isGpsOn()){
+                    Toast.makeText(BaseActivity.getCurrentActivity(), "Bạn chưa mở GPS! Mở GPS để xác định địa điểm chính xác!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                mLastLocation = location;
+                startLocationUpdates();
+                calcuDistance();
             }
         });
     }

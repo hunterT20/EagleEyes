@@ -112,9 +112,9 @@ class HttpAsyncClientHelper {
     }*/
 
     public interface AsyncListenerResponse {
-        public void onSuccess(String responseData);
+        void onSuccess(String responseData);
 
-        public void onFailure(String errorMessage);
+        void onFailure(String errorMessage);
     }
 
     private AsyncListenerResponse listener;

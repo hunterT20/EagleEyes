@@ -39,6 +39,7 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -136,6 +137,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                 .build();
         Fabric.with(fabric);
         ButterKnife.bind(this);
+        MapsInitializer.initialize(getApplicationContext());
         isFlyer = getIntent().getBooleanExtra("IsFlyer", true);
 
         addViews();
@@ -261,22 +263,19 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             }
         });
 
-        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                CameraPosition cameraPosition = googleMap.getCameraPosition();
-                int MaxCamera = 19, MinCamera = 17;
-                if (cameraPosition.zoom < MinCamera)
-                    for (int i = 0; i < MarkersText.size(); i++)
-                        MarkersText.get(i).setAlpha(0);
-                if (cameraPosition.zoom >= MinCamera && cameraPosition.zoom < MaxCamera) {
-                    float alpha = (cameraPosition.zoom - MinCamera) / (MaxCamera - MinCamera);
-                    for (int i = 0; i < MarkersText.size(); i++)
-                        MarkersText.get(i).setAlpha(alpha);
-                } else if (cameraPosition.zoom > MaxCamera)
-                    for (int i = 0; i < MarkersText.size(); i++)
-                        MarkersText.get(i).setAlpha(1);
-            }
+        googleMap.setOnCameraMoveListener(() -> {
+            CameraPosition cameraPosition = googleMap.getCameraPosition();
+            int MaxCamera = 19, MinCamera = 17;
+            if (cameraPosition.zoom < MinCamera)
+                for (int i = 0; i < MarkersText.size(); i++)
+                    MarkersText.get(i).setAlpha(0);
+            if (cameraPosition.zoom >= MinCamera && cameraPosition.zoom < MaxCamera) {
+                float alpha = (cameraPosition.zoom - MinCamera) / (MaxCamera - MinCamera);
+                for (int i = 0; i < MarkersText.size(); i++)
+                    MarkersText.get(i).setAlpha(alpha);
+            } else if (cameraPosition.zoom > MaxCamera)
+                for (int i = 0; i < MarkersText.size(); i++)
+                    MarkersText.get(i).setAlpha(1);
         });
     }
 
@@ -323,13 +322,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         this.doubleBackToExitPressedOnce = true;
         ToastHelper.showShortToast("Nhấn Trở về lần nữa để thoát");
 
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce = false;
-            }
-        }, 2000);
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
 
     @Override
@@ -497,12 +490,9 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             if (menu != null) {
                 menu.getItem(0).setIcon(R.drawable.ic_stop);
             }
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (locationService != null)
-                        locationService.startRecord();
-                }
+            new Handler().postDelayed(() -> {
+                if (locationService != null)
+                    locationService.startRecord();
             }, 1000);
             tv_currentArea.setVisibility(View.VISIBLE);
             tv_currentArea.setText(area.getName());
@@ -610,12 +600,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                 new LatLng(locationDTO != null ? locationDTO.getLat() : 0, locationDTO != null ? locationDTO.getLng() : 0),
                 currentDMarker.get(count));
         count++;
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                beginAnimation();
-            }
-        }, 100);
+        new Handler().postDelayed(() -> beginAnimation(), 100);
     }
 
     private void LoadFlyerData() {

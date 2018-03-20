@@ -12,12 +12,7 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
 
-        alertDialogBuilder.setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        alertDialogBuilder.setPositiveButton(buttonText, (dialog, which) -> dialog.dismiss());
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.setCanceledOnTouchOutside(false);
@@ -29,13 +24,10 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
 
-        alertDialogBuilder.setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerOneButtonClick != null) {
-                    listenerOneButtonClick.onButtonClick();
-                }
+        alertDialogBuilder.setPositiveButton(buttonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerOneButtonClick != null) {
+                listenerOneButtonClick.onButtonClick();
             }
         });
 
@@ -49,13 +41,10 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
         alertDialogBuilder.setCancelable(isCanCancel);
-        alertDialogBuilder.setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerOneButtonClick != null) {
-                    listenerOneButtonClick.onButtonClick();
-                }
+        alertDialogBuilder.setPositiveButton(buttonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerOneButtonClick != null) {
+                listenerOneButtonClick.onButtonClick();
             }
         });
 
@@ -69,23 +58,17 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
 
-        alertDialogBuilder.setPositiveButton(leftButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerTwoButtonClick != null) {
-                    listenerTwoButtonClick.onLeftButtonClick();
-                }
+        alertDialogBuilder.setPositiveButton(leftButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerTwoButtonClick != null) {
+                listenerTwoButtonClick.onLeftButtonClick();
             }
         });
 
-        alertDialogBuilder.setNegativeButton(rightButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerTwoButtonClick != null) {
-                    listenerTwoButtonClick.onRightButtonClick();
-                }
+        alertDialogBuilder.setNegativeButton(rightButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerTwoButtonClick != null) {
+                listenerTwoButtonClick.onRightButtonClick();
             }
         });
 
@@ -99,23 +82,17 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
 
-        alertDialogBuilder.setPositiveButton(leftButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerTwoButtonClick != null) {
-                    listenerTwoButtonClick.onLeftButtonClick();
-                }
+        alertDialogBuilder.setPositiveButton(leftButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerTwoButtonClick != null) {
+                listenerTwoButtonClick.onLeftButtonClick();
             }
         });
 
-        alertDialogBuilder.setNegativeButton(rightButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerTwoButtonClick != null) {
-                    listenerTwoButtonClick.onRightButtonClick();
-                }
+        alertDialogBuilder.setNegativeButton(rightButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerTwoButtonClick != null) {
+                listenerTwoButtonClick.onRightButtonClick();
             }
         });
 
@@ -130,33 +107,24 @@ public class DialogHelper {
         alertDialogBuilder.setTitle(title);
         alertDialogBuilder.setMessage(message);
 
-        alertDialogBuilder.setPositiveButton(leftButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerThreeButtonClick != null) {
-                    listenerThreeButtonClick.onLeftButtonClick();
-                }
+        alertDialogBuilder.setPositiveButton(leftButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerThreeButtonClick != null) {
+                listenerThreeButtonClick.onLeftButtonClick();
             }
         });
 
-        alertDialogBuilder.setNeutralButton(middleButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerThreeButtonClick != null) {
-                    listenerThreeButtonClick.onMiddleButtonClick();
-                }
+        alertDialogBuilder.setNeutralButton(middleButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerThreeButtonClick != null) {
+                listenerThreeButtonClick.onMiddleButtonClick();
             }
         });
 
-        alertDialogBuilder.setNegativeButton(rightButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                if (listenerThreeButtonClick != null) {
-                    listenerThreeButtonClick.onRightButtonClick();
-                }
+        alertDialogBuilder.setNegativeButton(rightButtonText, (dialog, which) -> {
+            dialog.dismiss();
+            if (listenerThreeButtonClick != null) {
+                listenerThreeButtonClick.onRightButtonClick();
             }
         });
 
@@ -167,20 +135,20 @@ public class DialogHelper {
 
 
     public interface onListenerOneButtonClick {
-        public void onButtonClick();
+        void onButtonClick();
     }
 
     public interface onListenerTwoButtonClick {
-        public void onLeftButtonClick();
+        void onLeftButtonClick();
 
-        public void onRightButtonClick();
+        void onRightButtonClick();
     }
 
     public interface onListenerThreeButtonClick {
-        public void onLeftButtonClick();
+        void onLeftButtonClick();
 
-        public void onMiddleButtonClick();
+        void onMiddleButtonClick();
 
-        public void onRightButtonClick();
+        void onRightButtonClick();
     }
 }
