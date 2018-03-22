@@ -13,8 +13,8 @@ import java.lang.reflect.Type;
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.entity.ByteArrayEntity;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.dto.DataObjectSend;
-import vn.dmcl.eagleeyes.dto.ResultDTO;
+import vn.dmcl.eagleeyes.data.dto.DataObjectSend;
+import vn.dmcl.eagleeyes.data.dto.ApiResult;
 import vn.dmcl.eagleeyes.view.BaseActivity;
 import vn.dmcl.eagleeyes.view.BaseApplication;
 import vn.dmcl.eagleeyes.view.login.LoginActivity;
@@ -86,8 +86,8 @@ public class DataServiceProvider<T> {
                 }
                 if (listener != null) {
                     try {
-                        if (temp instanceof ResultDTO)
-                            if (((ResultDTO) temp).getCode() == AppConst.SessionEnded) {
+                        if (temp instanceof ApiResult)
+                            if (((ApiResult) temp).getCode() == AppConst.SessionEnded) {
                                 UserAccountHelper.getIntance().setSecureKey("");
                                 DialogHelper.showAlertDialog(BaseActivity.getCurrentActivity(), "Cảnh báo", "Bạn đã hết phiên đăng nhập. Vui lòng đăng nhập lại!", "OK", new DialogHelper.onListenerOneButtonClick() {
                                     @Override

@@ -15,9 +15,9 @@ import android.widget.TextView;
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.dto.AreaDTO;
-import vn.dmcl.eagleeyes.dto.AreaFDTO;
-import vn.dmcl.eagleeyes.dto.DCheckManageFlyerDTO;
+import vn.dmcl.eagleeyes.data.dto.Area;
+import vn.dmcl.eagleeyes.data.dto.AreaFlyer;
+import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.view.map.ExpandableListAdapter;
@@ -41,9 +41,9 @@ public class DrawerFragment extends Fragment {
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<DCheckManageFlyerDTO> dCheckManageFlyerDTOs;
-    List<AreaDTO> areaDTOs;
+    List<Area> areaDTOs;
 
-    AreaDTO currentArea;
+    Area currentArea;
 
     int currentAreaWorkingIndex = -1, currentUserWorkingIndex = -1;
 
@@ -86,17 +86,17 @@ public class DrawerFragment extends Fragment {
         return view;
     }
 
-    public void updateFlyerData(AreaFDTO areaFDTO) {
-        areaDTOs = areaFDTO.getArea();
-        flyerMenuAdapter.updateData(areaFDTO.getArea());
-        if (areaFDTO.getArea() != null && areaFDTO.getArea().size() > 0) {
+    public void updateFlyerData(AreaFlyer areaFlyer) {
+        areaDTOs = areaFlyer.getArea();
+        flyerMenuAdapter.updateData(areaFlyer.getArea());
+        if (areaFlyer.getArea() != null && areaFlyer.getArea().size() > 0) {
             currentAreaWorkingIndex = getCurrentAreaWorkingIndex();
             if (currentAreaWorkingIndex == -1) {
                 currentArea = getFirstValidArea();
                 flyerMenuAdapter.updateSelectedItem(flyerMenuAdapter.IndexOfItem(currentArea));
             }
             else {
-                currentArea = areaFDTO.getArea().get(currentAreaWorkingIndex);
+                currentArea = areaFlyer.getArea().get(currentAreaWorkingIndex);
                 flyerMenuAdapter.updateSelectedItem(currentAreaWorkingIndex);
             }
         }
@@ -117,7 +117,7 @@ public class DrawerFragment extends Fragment {
     }
 
 
-    public AreaDTO getCurrentArea() {
+    public Area getCurrentArea() {
         return currentArea;
     }
 
@@ -214,7 +214,7 @@ public class DrawerFragment extends Fragment {
         }
     }
 
-    public AreaDTO getFirstValidArea() {
+    public Area getFirstValidArea() {
         if (isFlyer) {
             for (int i = 0; i < areaDTOs.size(); i++)
                 if (areaDTOs.get(i).getStatus() == AppConst.AreaStatus.None)
@@ -225,7 +225,7 @@ public class DrawerFragment extends Fragment {
                     if (dCheckManageFlyerDTOs.get(i).getArea().get(i).getStatus() == AppConst.AreaStatus.None)
                         return dCheckManageFlyerDTOs.get(i).getArea().get(i);
         }
-        return new AreaDTO();
+        return new Area();
     }
 
     // kiểm tra hoàn thành các khu vực
@@ -263,7 +263,7 @@ public class DrawerFragment extends Fragment {
         } else {
             if (dCheckManageFlyerDTOs != null) {
                 for (int i = 0; i < dCheckManageFlyerDTOs.size(); i++) {
-                    List<AreaDTO> list = dCheckManageFlyerDTOs.get(i).getArea();
+                    List<Area> list = dCheckManageFlyerDTOs.get(i).getArea();
                     for (int j = 0; j < list.size(); j++)
                         if (list.get(j).getStatus() == AppConst.AreaStatus.Started) {
                             currentUserWorkingIndex = i;

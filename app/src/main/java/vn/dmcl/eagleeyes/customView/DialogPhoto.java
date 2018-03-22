@@ -22,13 +22,13 @@ import java.io.ByteArrayOutputStream;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.common.FunctionConst;
-import vn.dmcl.eagleeyes.dto.PhotoDTO;
-import vn.dmcl.eagleeyes.dto.ResultDTO;
+import vn.dmcl.eagleeyes.data.dto.PhotoDTO;
+import vn.dmcl.eagleeyes.data.dto.ApiResult;
 import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.JsonHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
-import vn.dmcl.eagleeyes.service.LocationService;
+import vn.dmcl.eagleeyes.data.service.LocationService;
 
 public class DialogPhoto extends Dialog implements View.OnClickListener {
 
@@ -140,11 +140,11 @@ public class DialogPhoto extends Dialog implements View.OnClickListener {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            DataServiceProvider<ResultDTO<PhotoDTO>> UploadLocationPhoto = new DataServiceProvider<>(new TypeToken<ResultDTO<PhotoDTO>>() {
+            DataServiceProvider<ApiResult<PhotoDTO>> UploadLocationPhoto = new DataServiceProvider<>(new TypeToken<ApiResult<PhotoDTO>>() {
             }.getType());
-            UploadLocationPhoto.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<PhotoDTO>>() {
+            UploadLocationPhoto.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<PhotoDTO>>() {
                 @Override
-                public void onSuccess(ResultDTO<PhotoDTO> responseData) {
+                public void onSuccess(ApiResult<PhotoDTO> responseData) {
                     if (responseData.isResult()) {
                         ToastHelper.showShortToast("Thêm ảnh thành công!");
                         dismiss();

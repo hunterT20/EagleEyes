@@ -14,7 +14,7 @@ import java.util.List;
 
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.dto.AreaDTO;
+import vn.dmcl.eagleeyes.data.dto.Area;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 
 import static android.content.ContentValues.TAG;
@@ -22,10 +22,10 @@ import static android.content.ContentValues.TAG;
 public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListener {
 
     private Activity activity;
-    private List<AreaDTO> arrData;
+    private List<Area> arrData;
     private int currentSelectIndex = 0;
 
-    public FlyerMenuAdapter(Activity activity, List<AreaDTO> list) {
+    public FlyerMenuAdapter(Activity activity, List<Area> list) {
 
         this.activity = activity;
         arrData = list;
@@ -39,13 +39,13 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
     }
 
     @Override
-    public AreaDTO getItem(int position) {
+    public Area getItem(int position) {
         if (arrData == null)
             return null;
         return arrData.get(position);
     }
 
-    public void updateData(List<AreaDTO> list) {
+    public void updateData(List<Area> list) {
         arrData = list;
         notifyDataSetChanged();
     }
@@ -108,7 +108,7 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
             if (arrData.size() < holder.pos)
                 return;
             int pos = holder.pos;
-            AreaDTO dto = arrData.get(pos);
+            Area dto = arrData.get(pos);
 
             holder.tv_name.setText(dto.getName());
             holder.tv_position.setText(dto.getLat() + "-" + dto.getLng());
@@ -134,7 +134,7 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
         notifyDataSetChanged();
     }
 
-    public int IndexOfItem(AreaDTO area) {
+    public int IndexOfItem(Area area) {
         if (area == null)
             return -1;
         return arrData.indexOf(area);
@@ -172,16 +172,16 @@ public class FlyerMenuAdapter extends BaseAdapter implements View.OnClickListene
         return -1;
     }
 
-    public List<AreaDTO> getArrData() {
+    public List<Area> getArrData() {
         return arrData;
     }
 
-    public void setArrData(List<AreaDTO> arrData) {
+    public void setArrData(List<Area> arrData) {
         this.arrData = arrData;
         //notifyDataSetChanged();
     }
 
-    public void addData(List<AreaDTO> arrData) {
+    public void addData(List<Area> arrData) {
         this.arrData = arrData;
     }
 

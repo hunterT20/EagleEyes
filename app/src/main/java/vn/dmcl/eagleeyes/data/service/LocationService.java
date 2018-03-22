@@ -1,9 +1,8 @@
-package vn.dmcl.eagleeyes.service;
+package vn.dmcl.eagleeyes.data.service;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,8 +14,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.format.Time;
 import android.util.Log;
@@ -30,13 +27,20 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.HashMap;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.common.FunctionConst;
-import vn.dmcl.eagleeyes.dto.FlyerLogDTO;
-import vn.dmcl.eagleeyes.dto.ResultDTO;
+import vn.dmcl.eagleeyes.data.dto.FlyerLog;
+import vn.dmcl.eagleeyes.data.dto.ApiResult;
+import vn.dmcl.eagleeyes.data.remote.ApiUtils;
 import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DialogHelper;
 import vn.dmcl.eagleeyes.helper.JsonHelper;
@@ -59,6 +63,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private FusedLocationProviderClient client;
+    private static CompositeDisposable disposable = null;
 
 
     IBinder mBinder = new LocalBinder();
@@ -155,27 +160,65 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
     public void sendLocationToSV() {
-        DataServiceProvider<ResultDTO<FlyerLogDTO>> SendLocation = new DataServiceProvider<>(new TypeToken<ResultDTO<FlyerLogDTO>>() {
-        }.getType());
-        SendLocation.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<FlyerLogDTO>>() {
-            @Override
-            public void onSuccess(ResultDTO<FlyerLogDTO> responseData) {
-                if (!responseData.isResult())
-                    ToastHelper.showShortToast("Lỗi: " + responseData.getMessage());
-            }
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("key", UserAccountHelper.getIntance().getSecureKey());
+        param.put("logId", UserAccountHelper.getIntance().getLogId());
+        param.put("lat", getLastLocation().getLatitude());
+        param.put("lng", getLastLocation().getLongitude());
+        Observable<ApiResult<FlyerLog>> sentLocation = ApiUtils.getAPIBase().sendLocation(param);
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast(errorMessage);
-            }
-        });
-        SendLocation.getData(FunctionConst.SendLocation, AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().SendLocation(UserAccountHelper.getIntance().getLogId(),
-                        UserAccountHelper.getIntance().getSecureKey(),
-                        getLastLocation().getLatitude(),
-                        getLastLocation().getLongitude()
-                ));
+        sentLocation.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableObserver<ApiResult<FlyerLog>>() {
+                    @Override
+                    public void onNext(ApiResult<FlyerLog> result) {
+                        if (!result.isResult())
+                            ToastHelper.showShortToast("Lỗi: " + result.getMessage());
+                    }
 
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "Sent Location error: " + e.getMessage());
+                        Toast.makeText(LocationService.this, "Sent Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
+        sentRealTime();
+    }
+
+    public void sentRealTime(){
+        String id = UserAccountHelper.getIntance().getLogId();
+        Double lat = getLastLocation().getLatitude();
+        Double log = getLastLocation().getLongitude();
+        String name = UserAccountHelper.getIntance().getName();
+        String phone = UserAccountHelper.getIntance().getPhoneNumber();
+        String branch = "";
+        Observable<Object> sentRealTimeLocation = ApiUtils.getAPIMap().sentRealTimeLocation(id, lat, log, name, phone, branch);
+
+        sentRealTimeLocation.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableObserver<Object>() {
+                    @Override
+                    public void onNext(Object o) {
+                        Log.e(TAG, "onNext: " + "Success");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: " + e.getMessage());
+                        Toast.makeText(LocationService.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     // tinh vi tri cuoi cung thay doi cua GPS hay mang
@@ -295,6 +338,10 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
         }
+
+        if (disposable == null){
+            disposable = new CompositeDisposable();
+        }
     }
 
     @Override
@@ -306,5 +353,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             mGoogleApiClient.disconnect();
             mGoogleApiClient = null;
         }
+
+        disposable.clear();
     }
 }

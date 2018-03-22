@@ -17,8 +17,8 @@ import java.util.List;
 
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.dto.AreaDTO;
-import vn.dmcl.eagleeyes.dto.DCheckManageFlyerDTO;
+import vn.dmcl.eagleeyes.data.dto.Area;
+import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -26,7 +26,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context _context;
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
-    private HashMap<String, List<AreaDTO>> _listDataChild;
+    private HashMap<String, List<Area>> _listDataChild;
     private List<DCheckManageFlyerDTO> list;
 
     public int getCurrentUserIndex() {
@@ -59,7 +59,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public AreaDTO getChild(int groupPosition, int childPosititon) {
+    public Area getChild(int groupPosition, int childPosititon) {
         return this._listDataChild.get(this._listDataHeader.get(groupPosition))
                 .get(childPosititon);
     }
@@ -74,7 +74,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
 
-        final AreaDTO childArea = getChild(groupPosition, childPosition);
+        final Area childArea = getChild(groupPosition, childPosition);
 
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this._context
@@ -108,7 +108,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     /*public boolean isCompleteAllArea() {
         for (DCheckManageFlyerDTO manageFlyerDTO : list)
-            for (AreaDTO areaDTO : manageFlyerDTO.getArea())
+            for (Area areaDTO : manageFlyerDTO.getArea())
                 if (areaDTO.getStatus() != AppConst.AreaStatus.Ended)
                     return false;
         return true;

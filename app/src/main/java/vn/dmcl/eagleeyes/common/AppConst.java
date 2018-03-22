@@ -1,7 +1,8 @@
 package vn.dmcl.eagleeyes.common;
 
 public class AppConst {
-    public static String ServiceUrl = "http://112.78.12.251:12345/api/";
+    public static String
+            ServiceUrl = "http://112.78.12.251:12345/api/";
 
     public static float MaxDistances = 10;
     public static float MaxDistancesApproximately = 100;

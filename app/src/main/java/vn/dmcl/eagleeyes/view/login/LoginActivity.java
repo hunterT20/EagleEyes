@@ -25,17 +25,28 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.fabric.sdk.android.Fabric;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.common.FunctionConst;
-import vn.dmcl.eagleeyes.dto.ConfigDTO;
-import vn.dmcl.eagleeyes.dto.PageResultDTO;
-import vn.dmcl.eagleeyes.dto.ResultDTO;
-import vn.dmcl.eagleeyes.dto.SessionDTO;
+import vn.dmcl.eagleeyes.data.dto.ConfigDTO;
+import vn.dmcl.eagleeyes.data.dto.PageResultDTO;
+import vn.dmcl.eagleeyes.data.dto.ApiResult;
+import vn.dmcl.eagleeyes.data.dto.Session;
+import vn.dmcl.eagleeyes.data.remote.ApiUtils;
 import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DialogHelper;
 import vn.dmcl.eagleeyes.helper.JsonHelper;
@@ -59,6 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private TelephonyInfoHelper telephonyInfo;
     private boolean doubleBackToExitPressedOnce = false;
+    private CompositeDisposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +83,8 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
         Fabric.with(fabric);
         ButterKnife.bind(this);
+
+        disposable = new CompositeDisposable();
 
         PackageInfo packageInfo;
         try {
@@ -100,49 +114,61 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        disposable.clear();
+    }
+
     @OnClick(R.id.tv_login)
     public void onLoginClick() {
         v_loading.setVisibility(View.VISIBLE);
 
-        DataServiceProvider<ResultDTO<SessionDTO>> Login = new DataServiceProvider<>(new TypeToken<ResultDTO<SessionDTO>>() {
-        }.getType());
-        Login.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<SessionDTO>>() {
-            @Override
-            public void onSuccess(ResultDTO<SessionDTO> responseData) {
-                if (responseData.isResult()) {
-                    Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
-                    UserAccountHelper.getIntance().setSecureKey(responseData.getData().getKey());
-                    UserAccountHelper.getIntance().setUserType(responseData.getData().getUserType());
-                    UserAccountHelper.getIntance().setPhoneNumber(et_phone.getText().toString());
-                    if (responseData.getData().getUserType() == AppConst.UserType.FLYER)
-                        intent.putExtra("IsFlyer", true);
-                    else intent.putExtra("IsFlyer", false);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + responseData.getMessage());
-                    UserAccountHelper.getIntance().setSecureKey("");
-                }
-                v_loading.setVisibility(View.GONE);
-            }
+        HashMap<String,String> param = new HashMap<>();
+        param.put("phoneNumber", et_phone.getText().toString());
+        param.put("otp", et_password.getText().toString());
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + errorMessage);
-                UserAccountHelper.getIntance().setSecureKey("");
-                v_loading.setVisibility(View.GONE);
-            }
-        });
+        Observable<ApiResult<Session>> login = ApiUtils.getAPIBase().login(param);
+        Disposable disposableLogin =
+                login.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiResult<Session>>() {
+                            @Override
+                            public void onNext(ApiResult<Session> result) {
+                                if (result.isResult()) {
+                                    Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
 
-        Login.getData(
-                FunctionConst.Login,
-                AppConst.AsyncMethod.POST,
-                JsonHelper.getIntance().Login(
-                        et_phone.getText().toString(),
-                        et_password.getText().toString()
-                )
-        );
+                                    UserAccountHelper.getIntance().setSecureKey(result.getData().getKey());
+                                    UserAccountHelper.getIntance().setUserType(result.getData().getUserType());
+                                    UserAccountHelper.getIntance().setPhoneNumber(et_phone.getText().toString());
+
+                                    if (result.getData().getUserType() == AppConst.UserType.FLYER){
+                                        intent.putExtra("IsFlyer", true);
+                                    }else {
+                                        intent.putExtra("IsFlyer", false);
+                                    }
+
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    ToastHelper.showShortToast(result.getMessage());
+                                    UserAccountHelper.getIntance().setSecureKey("");
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "Login Error: " + e.getMessage());
+                                UserAccountHelper.getIntance().setSecureKey("");
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                v_loading.setVisibility(View.GONE);
+                            }
+                        });
+        disposable.add(disposableLogin);
     }
 
     @OnClick(R.id.btn_Login_Session)
@@ -172,12 +198,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void checkToken() {
         if (!UserAccountHelper.getIntance().getSecureKey().contentEquals("")) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LoginWithSession();
-                }
-            }, 500);
+            new Handler().postDelayed(this::LoginWithSession, 500);
         }
     }
 
@@ -219,11 +240,11 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void checkLogKey() {
         v_loading.setVisibility(View.VISIBLE);
-        DataServiceProvider<ResultDTO<SessionDTO>> CheckKey = new DataServiceProvider<>(new TypeToken<ResultDTO<SessionDTO>>() {
+        DataServiceProvider<ApiResult<Session>> CheckKey = new DataServiceProvider<>(new TypeToken<ApiResult<Session>>() {
         }.getType());
-        CheckKey.setListener(new DataServiceProvider.OnListenerReponse<ResultDTO<SessionDTO>>() {
+        CheckKey.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<Session>>() {
             @Override
-            public void onSuccess(ResultDTO<SessionDTO> responseData) {
+            public void onSuccess(ApiResult<Session> responseData) {
                 if (responseData.isResult()) {
                     Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
                     if (UserAccountHelper.getIntance().getUserType() == AppConst.UserType.FLYER)

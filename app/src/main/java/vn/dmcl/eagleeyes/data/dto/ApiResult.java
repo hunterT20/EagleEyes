@@ -1,6 +1,6 @@
-package vn.dmcl.eagleeyes.dto;
+package vn.dmcl.eagleeyes.data.dto;
 
-public class ResultDTO<T> {
+public class ApiResult<T> {
     private boolean Result;
     private int Code;
     private T Data;

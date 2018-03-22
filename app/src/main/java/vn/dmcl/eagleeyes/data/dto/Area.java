@@ -1,25 +1,42 @@
-package vn.dmcl.eagleeyes.dto;
+package vn.dmcl.eagleeyes.data.dto;
 
-public class AreaDTO {
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+public class Area {
+    @SerializedName("Status")
+    @Expose
+    private Integer Status;
+    @SerializedName("Id")
+    @Expose
     private String Id;
+    @SerializedName("LocalId")
+    @Expose
+    private Integer localId;
+    @SerializedName("Name")
+    @Expose
     private String Name;
-    private double Lat;
-    private double Lng;
-    private double Radius;
-    private int Count;
-    private int Status;
+    @SerializedName("Lat")
+    @Expose
+    private Double Lat;
+    @SerializedName("Lng")
+    @Expose
+    private Double Lng;
+    @SerializedName("Radius")
+    @Expose
+    private Double Radius;
+    @SerializedName("Count")
+    @Expose
+    private Integer Count;
 
-    public AreaDTO() {}
+    public Area() {}
 
-    public AreaDTO(String id, String name, double lat, double lng, double radius, int count, int status) {
-        Id = id;
-        Name = name;
-        Lat = lat;
-        Lng = lng;
-        Radius = radius;
-        Count = count;
-        Status = status;
+    public Integer getLocalId() {
+        return localId;
+    }
 
+    public void setLocalId(Integer localId) {
+        this.localId = localId;
     }
 
     public String getId() {

@@ -1,8 +1,8 @@
-package vn.dmcl.eagleeyes.dto;
+package vn.dmcl.eagleeyes.data.dto;
 
 import java.util.List;
 
-public class FlyerLogDTO {
+public class FlyerLog {
     private String Id;
     private int FlyerId;
     private int AgentId;
@@ -12,7 +12,7 @@ public class FlyerLogDTO {
     private int Status;
     private String ExpiredTime;
     private String CreatedDate;
-    private AreaDTO Area;
+    private vn.dmcl.eagleeyes.data.dto.Area Area;
     private List<LocationDTO> Location;
 
     public String getId() {
@@ -87,11 +87,11 @@ public class FlyerLogDTO {
         CreatedDate = createdDate;
     }
 
-    public AreaDTO getArea() {
+    public vn.dmcl.eagleeyes.data.dto.Area getArea() {
         return Area;
     }
 
-    public void setArea(AreaDTO area) {
+    public void setArea(vn.dmcl.eagleeyes.data.dto.Area area) {
         Area = area;
     }
 

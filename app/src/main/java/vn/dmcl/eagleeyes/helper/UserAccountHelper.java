@@ -6,16 +6,12 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.google.gson.Gson;
-
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.dto.ConfigDTO;
-import vn.dmcl.eagleeyes.dto.SessionDTO;
+import vn.dmcl.eagleeyes.data.dto.ConfigDTO;
 
 import static android.content.ContentValues.TAG;
-import static android.content.Context.MODE_PRIVATE;
 
 public class UserAccountHelper {
     @SuppressLint("StaticFieldLeak")
@@ -94,5 +90,15 @@ public class UserAccountHelper {
         } catch (Exception ex) {
             Log.e(TAG, "updateConfig: " + ex);
         }
+    }
+
+    public void setName(String name){
+        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+        prefsEditor.putString("Name", name);
+        prefsEditor.apply();
+    }
+
+    public String getName(){
+        return mPrefs.getString("Name", "");
     }
 }

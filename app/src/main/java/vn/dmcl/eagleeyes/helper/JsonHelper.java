@@ -5,6 +5,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 import static android.content.ContentValues.TAG;
 
 public class JsonHelper {
@@ -94,15 +96,11 @@ public class JsonHelper {
     }
 
 
-    public JSONObject Login(String phoneNumber, String otp) {
-        JSONObject temp = new JSONObject();
-        try {
-            temp.put("otp", otp);
-            temp.put("phoneNumber", phoneNumber);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return temp;
+    public HashMap Login(String phoneNumber, String otp) {
+        HashMap<String,String> param = new HashMap<>();
+        param.put("otp", otp);
+        param.put("phoneNumber", phoneNumber);
+        return param;
     }
 
     public JSONObject SendLocation(String logId, String key, double lat, double lng) {

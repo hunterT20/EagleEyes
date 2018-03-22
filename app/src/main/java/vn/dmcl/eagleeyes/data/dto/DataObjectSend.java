@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.dto;
+package vn.dmcl.eagleeyes.data.dto;
 
 public interface DataObjectSend {
 }

@@ -1,17 +1,15 @@
-package vn.dmcl.eagleeyes.dto;
+package vn.dmcl.eagleeyes.data.dto;
 
-public class SessionDTO {
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+public class Session {
+    @SerializedName("Key")
+    @Expose
     private String Key;
-    private String PhoneNumber;
+    @SerializedName("UserType")
+    @Expose
     private int UserType;
-
-    public String getPhoneNumber() {
-        return PhoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        PhoneNumber = phoneNumber;
-    }
 
     public String getKey() {
         return Key;
