@@ -14,7 +14,7 @@ import java.util.List;
 
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.Area;
+import vn.dmcl.eagleeyes.data.model.Area;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 
 import static android.content.ContentValues.TAG;

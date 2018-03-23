@@ -1,8 +1,8 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import java.util.List;
 
-public class DCheckLogDTO {
+public class DCheckLog {
     private String Id;
     private long DCheckId;
     private long FlyerId;
@@ -13,11 +13,11 @@ public class DCheckLogDTO {
     private Area Area;
     private String Key;
 
-    public List<vn.dmcl.eagleeyes.data.dto.Location> getLocation() {
+    public List<vn.dmcl.eagleeyes.data.model.Location> getLocation() {
         return Location;
     }
 
-    public void setLocation(List<vn.dmcl.eagleeyes.data.dto.Location> location) {
+    public void setLocation(List<vn.dmcl.eagleeyes.data.model.Location> location) {
         Location = location;
     }
 
@@ -77,11 +77,11 @@ public class DCheckLogDTO {
         CreatedDate = createdDate;
     }
 
-    public vn.dmcl.eagleeyes.data.dto.Area getArea() {
+    public vn.dmcl.eagleeyes.data.model.Area getArea() {
         return Area;
     }
 
-    public void setArea(vn.dmcl.eagleeyes.data.dto.Area area) {
+    public void setArea(vn.dmcl.eagleeyes.data.model.Area area) {
         Area = area;
     }
 
@@ -93,5 +93,5 @@ public class DCheckLogDTO {
         Key = key;
     }
 
-    private List<vn.dmcl.eagleeyes.data.dto.Location> Location;
+    private List<vn.dmcl.eagleeyes.data.model.Location> Location;
 }

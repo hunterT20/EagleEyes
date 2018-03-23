@@ -17,8 +17,8 @@ import java.util.List;
 
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.Area;
-import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
+import vn.dmcl.eagleeyes.data.model.Area;
+import vn.dmcl.eagleeyes.data.model.DCheckManageFlyer;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -27,7 +27,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<Area>> _listDataChild;
-    private List<DCheckManageFlyerDTO> list;
+    private List<DCheckManageFlyer> list;
 
     public int getCurrentUserIndex() {
         return currentUserIndex;
@@ -47,7 +47,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     private int currentUserIndex, currentDCheckAreaIndex;
 
-    public ExpandableListAdapter(Context context, List<DCheckManageFlyerDTO> dtos) {
+    public ExpandableListAdapter(Context context, List<DCheckManageFlyer> dtos) {
         this._context = context;
         this.list = dtos;
         if (dtos != null)
@@ -107,7 +107,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     /*public boolean isCompleteAllArea() {
-        for (DCheckManageFlyerDTO manageFlyerDTO : list)
+        for (DCheckManageFlyer manageFlyerDTO : list)
             for (Area areaDTO : manageFlyerDTO.getArea())
                 if (areaDTO.getStatus() != AppConst.AreaStatus.Ended)
                     return false;
@@ -153,7 +153,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
-    public void updateData(List<DCheckManageFlyerDTO> dtos) {
+    public void updateData(List<DCheckManageFlyer> dtos) {
         generateData(dtos);
         notifyDataSetChanged();
     }
@@ -165,7 +165,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
-    private void generateData(List<DCheckManageFlyerDTO> list) {
+    private void generateData(List<DCheckManageFlyer> list) {
         _listDataHeader.clear();
         _listDataChild.clear();
         for (int i = 0; i < list.size(); i++) {

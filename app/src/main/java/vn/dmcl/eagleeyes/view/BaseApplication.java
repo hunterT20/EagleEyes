@@ -30,13 +30,10 @@ public class BaseApplication extends Application {
         NetworkHelper.initContext(this);
         ToastHelper.initContext(this);
         UserAccountHelper.initContext(this);
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread thread, Throwable e) {
-                Log.e("Có lỗi đột xuất", e.getMessage());
-                Crashlytics.log(e.getMessage());
-                handleUncaughtException(thread, e);
-            }
+        Thread.setDefaultUncaughtExceptionHandler((thread, e) -> {
+            Log.e("Có lỗi đột xuất", e.getMessage());
+            Crashlytics.log(e.getMessage());
+            handleUncaughtException(e);
         });
     }
 
@@ -46,7 +43,7 @@ public class BaseApplication extends Application {
         MultiDex.install(this);
     }
 
-    public void handleUncaughtException(Thread thread, Throwable e) {
+    public void handleUncaughtException(Throwable e) {
         Log.e("Có lỗi đột xuất", e.getMessage());
         Crashlytics.log(e.getMessage());
         e.printStackTrace();

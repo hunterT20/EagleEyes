@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import java.util.List;
 
@@ -47,13 +47,13 @@ public class Location {
     public void setTime(double time) {
         Time = time;
     }
-    private List<vn.dmcl.eagleeyes.data.dto.Photo> Photo;
+    private List<vn.dmcl.eagleeyes.data.model.Photo> Photo;
 
-    public List<vn.dmcl.eagleeyes.data.dto.Photo> getPhoto() {
+    public List<vn.dmcl.eagleeyes.data.model.Photo> getPhoto() {
         return Photo;
     }
 
-    public void setPhoto(List<vn.dmcl.eagleeyes.data.dto.Photo> photo) {
+    public void setPhoto(List<vn.dmcl.eagleeyes.data.model.Photo> photo) {
         Photo = photo;
     }
 }

@@ -9,7 +9,7 @@ import android.util.Log;
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.Config;
+import vn.dmcl.eagleeyes.data.model.Config;
 
 import static android.content.ContentValues.TAG;
 

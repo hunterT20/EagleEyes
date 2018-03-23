@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -87,11 +87,11 @@ public class AreaFlyer {
         CreatedDate = createdDate;
     }
 
-    public List<vn.dmcl.eagleeyes.data.dto.Area> getArea() {
+    public List<vn.dmcl.eagleeyes.data.model.Area> getArea() {
         return Area;
     }
 
-    public void setArea(List<vn.dmcl.eagleeyes.data.dto.Area> area) {
+    public void setArea(List<vn.dmcl.eagleeyes.data.model.Area> area) {
         Area = area;
     }
 }

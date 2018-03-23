@@ -71,13 +71,13 @@ import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
 import vn.dmcl.eagleeyes.customView.DialogPhoto;
 import vn.dmcl.eagleeyes.customView.DrawerFragment;
-import vn.dmcl.eagleeyes.data.dto.Area;
-import vn.dmcl.eagleeyes.data.dto.AreaFlyer;
-import vn.dmcl.eagleeyes.data.dto.DCheckManageDTO;
-import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
-import vn.dmcl.eagleeyes.data.dto.FlyerLog;
-import vn.dmcl.eagleeyes.data.dto.Location;
-import vn.dmcl.eagleeyes.data.dto.ApiResult;
+import vn.dmcl.eagleeyes.data.model.Area;
+import vn.dmcl.eagleeyes.data.model.AreaFlyer;
+import vn.dmcl.eagleeyes.data.model.DCheckManage;
+import vn.dmcl.eagleeyes.data.model.DCheckManageFlyer;
+import vn.dmcl.eagleeyes.data.model.FlyerLog;
+import vn.dmcl.eagleeyes.data.model.Location;
+import vn.dmcl.eagleeyes.data.model.ApiResult;
 import vn.dmcl.eagleeyes.data.remote.ApiUtils;
 import vn.dmcl.eagleeyes.helper.DateTimeHelper;
 import vn.dmcl.eagleeyes.helper.MarkerHelper;
@@ -110,7 +110,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     MapFragment mapFragment;
 
     List<Area> areaDTOList;
-    List<DCheckManageFlyerDTO> dCheckManageFlyerDTOs;
+    List<DCheckManageFlyer> dCheckManageFlyerDTOs;
     List<Circle> currentDCircle;
     List<Marker> currentDMarker;
     List<Marker> MarkersText = new ArrayList<>();
@@ -672,14 +672,14 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
         HashMap<String, Object> param = new HashMap<>();
         param.put("key", UserAccountHelper.getIntance().getSecureKey());
-        Observable<ApiResult<DCheckManageDTO>> getListUser = ApiUtils.getAPIBase().getListUser(param);
+        Observable<ApiResult<DCheckManage>> getListUser = ApiUtils.getAPIBase().getListUser(param);
 
         Disposable disposableListUser =
                 getListUser.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableObserver<ApiResult<DCheckManageDTO>>() {
+                        .subscribeWith(new DisposableObserver<ApiResult<DCheckManage>>() {
                             @Override
-                            public void onNext(ApiResult<DCheckManageDTO> result) {
+                            public void onNext(ApiResult<DCheckManage> result) {
                                 if (result.isResult()) {
                                     ll_marker_des.setVisibility(View.VISIBLE);
                                     if (result.getData().getFlyer().size() != 0) {

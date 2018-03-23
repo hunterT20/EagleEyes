@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 public class Config {
     private String Id;

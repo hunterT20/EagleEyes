@@ -1,12 +1,12 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import java.util.List;
 
-public class DCheckManageFlyerDTO {
+public class DCheckManageFlyer {
     private long FlyerId;
     private String Name;
     private String PhoneNumber;
-    private List<vn.dmcl.eagleeyes.data.dto.Area> Area;
+    private List<vn.dmcl.eagleeyes.data.model.Area> Area;
 
     public long getFlyerId() {
         return FlyerId;
@@ -32,11 +32,11 @@ public class DCheckManageFlyerDTO {
         PhoneNumber = phoneNumber;
     }
 
-    public List<vn.dmcl.eagleeyes.data.dto.Area> getArea() {
+    public List<vn.dmcl.eagleeyes.data.model.Area> getArea() {
         return Area;
     }
 
-    public void setArea(List<vn.dmcl.eagleeyes.data.dto.Area> area) {
+    public void setArea(List<vn.dmcl.eagleeyes.data.model.Area> area) {
         Area = area;
     }
 }

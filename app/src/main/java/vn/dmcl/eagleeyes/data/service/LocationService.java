@@ -37,8 +37,8 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.FlyerLog;
-import vn.dmcl.eagleeyes.data.dto.ApiResult;
+import vn.dmcl.eagleeyes.data.model.FlyerLog;
+import vn.dmcl.eagleeyes.data.model.ApiResult;
 import vn.dmcl.eagleeyes.data.remote.ApiUtils;
 import vn.dmcl.eagleeyes.helper.DialogHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
@@ -78,7 +78,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Log.e(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
         // giup service khoi tao lai neu bi giet
         return START_STICKY;

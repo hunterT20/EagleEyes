@@ -15,9 +15,9 @@ import android.widget.TextView;
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.Area;
-import vn.dmcl.eagleeyes.data.dto.AreaFlyer;
-import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
+import vn.dmcl.eagleeyes.data.model.Area;
+import vn.dmcl.eagleeyes.data.model.AreaFlyer;
+import vn.dmcl.eagleeyes.data.model.DCheckManageFlyer;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.view.map.ExpandableListAdapter;
@@ -40,7 +40,7 @@ public class DrawerFragment extends Fragment {
 
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
-    List<DCheckManageFlyerDTO> dCheckManageFlyerDTOs;
+    List<DCheckManageFlyer> dCheckManageFlyerDTOs;
     List<Area> areaDTOs;
 
     Area currentArea;
@@ -102,7 +102,7 @@ public class DrawerFragment extends Fragment {
         }
     }
 
-    public void updateDCheckData(List<DCheckManageFlyerDTO> dtos) {
+    public void updateDCheckData(List<DCheckManageFlyer> dtos) {
         dCheckManageFlyerDTOs = dtos;
         listAdapter.updateData(dtos);
         if (dtos != null && dtos.size() > 0) {

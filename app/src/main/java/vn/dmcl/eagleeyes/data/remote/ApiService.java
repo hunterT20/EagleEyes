@@ -7,14 +7,14 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
-import vn.dmcl.eagleeyes.data.dto.ApiListResult;
-import vn.dmcl.eagleeyes.data.dto.ApiResult;
-import vn.dmcl.eagleeyes.data.dto.AreaFlyer;
-import vn.dmcl.eagleeyes.data.dto.Config;
-import vn.dmcl.eagleeyes.data.dto.DCheckManageDTO;
-import vn.dmcl.eagleeyes.data.dto.FlyerLog;
-import vn.dmcl.eagleeyes.data.dto.Photo;
-import vn.dmcl.eagleeyes.data.dto.Session;
+import vn.dmcl.eagleeyes.data.model.ApiListResult;
+import vn.dmcl.eagleeyes.data.model.ApiResult;
+import vn.dmcl.eagleeyes.data.model.AreaFlyer;
+import vn.dmcl.eagleeyes.data.model.Config;
+import vn.dmcl.eagleeyes.data.model.DCheckManage;
+import vn.dmcl.eagleeyes.data.model.FlyerLog;
+import vn.dmcl.eagleeyes.data.model.Photo;
+import vn.dmcl.eagleeyes.data.model.Session;
 
 public interface ApiService {
     @POST("CheckKey")
@@ -49,7 +49,7 @@ public interface ApiService {
     Observable<ApiResult<FlyerLog>> stopLog(@Body HashMap<String, Object> param);
 
     @POST("GetListUser")
-    Observable<ApiResult<DCheckManageDTO>> getListUser(@Body HashMap<String, Object> param);
+    Observable<ApiResult<DCheckManage>> getListUser(@Body HashMap<String, Object> param);
 
     @POST("GetListLocation")
     Observable<ApiResult<FlyerLog>> getListLocation(@Body HashMap<String, Object> param);

@@ -1,4 +1,4 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -92,19 +92,19 @@ public class FlyerLog {
         CreatedDate = createdDate;
     }
 
-    public vn.dmcl.eagleeyes.data.dto.Area getArea() {
+    public vn.dmcl.eagleeyes.data.model.Area getArea() {
         return Area;
     }
 
-    public void setArea(vn.dmcl.eagleeyes.data.dto.Area area) {
+    public void setArea(vn.dmcl.eagleeyes.data.model.Area area) {
         Area = area;
     }
 
-    public List<vn.dmcl.eagleeyes.data.dto.Location> getLocation() {
+    public List<vn.dmcl.eagleeyes.data.model.Location> getLocation() {
         return Location;
     }
 
-    public void setLocation(List<vn.dmcl.eagleeyes.data.dto.Location> location) {
+    public void setLocation(List<vn.dmcl.eagleeyes.data.model.Location> location) {
         Location = location;
     }
 }

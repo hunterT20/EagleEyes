@@ -1,14 +1,14 @@
-package vn.dmcl.eagleeyes.data.dto;
+package vn.dmcl.eagleeyes.data.model;
 
 import java.util.List;
 
-public class DCheckManageDTO {
+public class DCheckManage {
     private String Id;
     private long DCheckId;
     private long AgentId;
     private int Status;
     private String CreatedDate;
-    private List<DCheckManageFlyerDTO> Flyer;
+    private List<DCheckManageFlyer> Flyer;
 
     public String getId() {
         return Id;
@@ -50,11 +50,11 @@ public class DCheckManageDTO {
         CreatedDate = createdDate;
     }
 
-    public List<DCheckManageFlyerDTO> getFlyer() {
+    public List<DCheckManageFlyer> getFlyer() {
         return Flyer;
     }
 
-    public void setFlyer(List<DCheckManageFlyerDTO> flyer) {
+    public void setFlyer(List<DCheckManageFlyer> flyer) {
         Flyer = flyer;
     }
 }
