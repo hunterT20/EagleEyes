@@ -1,10 +1,23 @@
 package vn.dmcl.eagleeyes.data.dto;
 
-public class PhotoDTO {
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+public class Photo {
+    @SerializedName("Id")
+    @Expose
     private String Id;
+    @SerializedName("PhotoLink")
+    @Expose
     private String PhotoLink;
+    @SerializedName("CreateDate")
+    @Expose
     private String CreateDate;
+    @SerializedName("Description")
+    @Expose
     private String Description;
+    @SerializedName("Status")
+    @Expose
     private int Status;
 
     public int getStatus() {

@@ -2,14 +2,14 @@ package vn.dmcl.eagleeyes.data.dto;
 
 import java.util.List;
 
-public class LocationDTO {
+public class Location {
     private double Lat;
     private double Lng;
     private String CreateDate;
     private double Time;
 
-    LocationDTO() {}
-    public LocationDTO(double lat, double lng, String createDate)
+    Location() {}
+    public Location(double lat, double lng, String createDate)
     {
         Lat = lat;
         Lng = lng;
@@ -47,13 +47,13 @@ public class LocationDTO {
     public void setTime(double time) {
         Time = time;
     }
-    private List<PhotoDTO> Photo;
+    private List<vn.dmcl.eagleeyes.data.dto.Photo> Photo;
 
-    public List<PhotoDTO> getPhoto() {
+    public List<vn.dmcl.eagleeyes.data.dto.Photo> getPhoto() {
         return Photo;
     }
 
-    public void setPhoto(List<PhotoDTO> photo) {
+    public void setPhoto(List<vn.dmcl.eagleeyes.data.dto.Photo> photo) {
         Photo = photo;
     }
 }

@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -15,20 +16,22 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.gson.reflect.TypeToken;
-
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.R;
-import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.common.FunctionConst;
-import vn.dmcl.eagleeyes.data.dto.PhotoDTO;
+import vn.dmcl.eagleeyes.data.dto.Photo;
 import vn.dmcl.eagleeyes.data.dto.ApiResult;
-import vn.dmcl.eagleeyes.helper.DataServiceProvider;
-import vn.dmcl.eagleeyes.helper.JsonHelper;
+import vn.dmcl.eagleeyes.data.remote.ApiUtils;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
 import vn.dmcl.eagleeyes.data.service.LocationService;
+
+import static android.content.ContentValues.TAG;
 
 public class DialogPhoto extends Dialog implements View.OnClickListener {
 
@@ -135,35 +138,45 @@ public class DialogPhoto extends Dialog implements View.OnClickListener {
                 ToastHelper.showShortToast("Vui lòng điền chú thích trước khi thêm ảnh");
                 return;
             }
+
             v_loading.setVisibility(View.VISIBLE);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            DataServiceProvider<ApiResult<PhotoDTO>> UploadLocationPhoto = new DataServiceProvider<>(new TypeToken<ApiResult<PhotoDTO>>() {
-            }.getType());
-            UploadLocationPhoto.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<PhotoDTO>>() {
-                @Override
-                public void onSuccess(ApiResult<PhotoDTO> responseData) {
-                    if (responseData.isResult()) {
-                        ToastHelper.showShortToast("Thêm ảnh thành công!");
-                        dismiss();
-                    } else ToastHelper.showShortToast(responseData.getMessage());
-                    v_loading.setVisibility(View.GONE);
-                }
 
-                @Override
-                public void onFailure(String errorMessage) {
-                    ToastHelper.showShortToast(errorMessage);
-                    v_loading.setVisibility(View.GONE);
-                }
-            });
-            UploadLocationPhoto.getData(FunctionConst.UploadLocationPhoto, AppConst.AsyncMethod.POST,
-                    JsonHelper.getIntance().UploadLocationPhoto(UserAccountHelper.getIntance().getLogId(),
-                            locationService.getLastLocation().getLatitude(),
-                            locationService.getLastLocation().getLongitude(),
-                            encoded, et_description.getText().toString(),
-                            UserAccountHelper.getIntance().getSecureKey()));
+            HashMap<String, Object> param = new HashMap<>();
+            param.put("logId", UserAccountHelper.getIntance().getLogId());
+            param.put("lat", locationService.getLastLocation().getLatitude());
+            param.put("lng", locationService.getLastLocation().getLongitude());
+            param.put("base64Photo", encoded);
+            param.put("description", et_description.getText().toString());
+            param.put("key", UserAccountHelper.getIntance().getSecureKey());
+
+            Observable<ApiResult<Photo>> uploadPhoto = ApiUtils.getAPIBase().upLoadPhoto(param);
+            uploadPhoto.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(new DisposableObserver<ApiResult<Photo>>() {
+                        @Override
+                        public void onNext(ApiResult<Photo> result) {
+                            if (result.isResult()) {
+                                ToastHelper.showShortToast("Thêm ảnh thành công!");
+                                dismiss();
+                            } else ToastHelper.showShortToast(result.getMessage());
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, "onError: " + e.getMessage());
+                            ToastHelper.showShortToast("Xảy ra lỗi: " + e.getMessage());
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            v_loading.setVisibility(View.GONE);
+                        }
+                    });
+
         } catch (Exception ex) {
             ToastHelper.showShortToast("Có lỗi: " + ex.getMessage());
             v_loading.setVisibility(View.GONE);

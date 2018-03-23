@@ -2,7 +2,7 @@ package vn.dmcl.eagleeyes.data.dto;
 
 import java.util.List;
 
-public class PageResultDTO<T> {
+public class ApiListResult<T> {
     public List<T> Items;
     public int Total;
     public int PageIndex;

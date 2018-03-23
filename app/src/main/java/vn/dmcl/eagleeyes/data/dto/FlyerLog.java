@@ -1,5 +1,8 @@
 package vn.dmcl.eagleeyes.data.dto;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class FlyerLog {
@@ -8,12 +11,14 @@ public class FlyerLog {
     private int AgentId;
     private String PhoneNumber;
     private String OTP;
+    @SerializedName("key")
+    @Expose
     private String Key;
     private int Status;
     private String ExpiredTime;
     private String CreatedDate;
-    private vn.dmcl.eagleeyes.data.dto.Area Area;
-    private List<LocationDTO> Location;
+    private Area Area;
+    private List<Location> Location;
 
     public String getId() {
         return Id;
@@ -95,11 +100,11 @@ public class FlyerLog {
         Area = area;
     }
 
-    public List<LocationDTO> getLocation() {
+    public List<vn.dmcl.eagleeyes.data.dto.Location> getLocation() {
         return Location;
     }
 
-    public void setLocation(List<LocationDTO> location) {
+    public void setLocation(List<vn.dmcl.eagleeyes.data.dto.Location> location) {
         Location = location;
     }
 }

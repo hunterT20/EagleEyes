@@ -9,7 +9,7 @@ import android.util.Log;
 import java.util.List;
 
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.data.dto.ConfigDTO;
+import vn.dmcl.eagleeyes.data.dto.Config;
 
 import static android.content.ContentValues.TAG;
 
@@ -78,9 +78,9 @@ public class UserAccountHelper {
         return mPrefs.getInt("UserType", 0);
     }
 
-    public void updateConfig(List<ConfigDTO> list) {
+    public void updateConfig(List<Config> list) {
         try {
-            for (ConfigDTO item :
+            for (Config item :
                     list) {
                 if (item.getName().equals("MaxDistance"))
                     AppConst.MaxDistances = Float.parseFloat(item.getValue());

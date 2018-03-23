@@ -10,14 +10,14 @@ public class DCheckLogDTO {
     private int Status;
     private String ExpiredTime;
     private String CreatedDate;
-    private vn.dmcl.eagleeyes.data.dto.Area Area;
+    private Area Area;
     private String Key;
 
-    public List<LocationDTO> getLocation() {
+    public List<vn.dmcl.eagleeyes.data.dto.Location> getLocation() {
         return Location;
     }
 
-    public void setLocation(List<LocationDTO> location) {
+    public void setLocation(List<vn.dmcl.eagleeyes.data.dto.Location> location) {
         Location = location;
     }
 
@@ -93,5 +93,5 @@ public class DCheckLogDTO {
         Key = key;
     }
 
-    private List<LocationDTO> Location;
+    private List<vn.dmcl.eagleeyes.data.dto.Location> Location;
 }

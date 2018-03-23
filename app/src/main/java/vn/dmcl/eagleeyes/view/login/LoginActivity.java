@@ -21,11 +21,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONObject;
 
 import java.util.HashMap;
 
@@ -41,15 +39,12 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.common.FunctionConst;
-import vn.dmcl.eagleeyes.data.dto.ConfigDTO;
-import vn.dmcl.eagleeyes.data.dto.PageResultDTO;
+import vn.dmcl.eagleeyes.data.dto.Config;
+import vn.dmcl.eagleeyes.data.dto.ApiListResult;
 import vn.dmcl.eagleeyes.data.dto.ApiResult;
 import vn.dmcl.eagleeyes.data.dto.Session;
 import vn.dmcl.eagleeyes.data.remote.ApiUtils;
-import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DialogHelper;
-import vn.dmcl.eagleeyes.helper.JsonHelper;
 import vn.dmcl.eagleeyes.helper.NetworkHelper;
 import vn.dmcl.eagleeyes.helper.TelephonyInfoHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
@@ -240,37 +235,47 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void checkLogKey() {
         v_loading.setVisibility(View.VISIBLE);
-        DataServiceProvider<ApiResult<Session>> CheckKey = new DataServiceProvider<>(new TypeToken<ApiResult<Session>>() {
-        }.getType());
-        CheckKey.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<Session>>() {
-            @Override
-            public void onSuccess(ApiResult<Session> responseData) {
-                if (responseData.isResult()) {
-                    Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
-                    if (UserAccountHelper.getIntance().getUserType() == AppConst.UserType.FLYER)
-                        intent.putExtra("IsFlyer", true);
-                    else intent.putExtra("IsFlyer", false);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + responseData.getMessage());
-                    UserAccountHelper.getIntance().setSecureKey("");
-                    Login_Main.setVisibility(View.VISIBLE);
-                    Login_Session.setVisibility(View.GONE);
-                }
-                v_loading.setVisibility(View.GONE);
-            }
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + errorMessage);
-                UserAccountHelper.getIntance().setSecureKey("");
-                v_loading.setVisibility(View.GONE);
-            }
-        });
-        CheckKey.getData(FunctionConst.CheckKey, AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().CheckKey(UserAccountHelper.getIntance().getSecureKey()));
+        HashMap<String, String> param = new HashMap<>();
+        param.put("key", UserAccountHelper.getIntance().getSecureKey());
+
+        Observable<ApiResult<Session>> checkKey = ApiUtils.getAPIBase().checkKey(param);
+        Disposable disposableCheckKey =
+                checkKey.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiResult<Session>>() {
+                            @Override
+                            public void onNext(ApiResult<Session> result) {
+                                if (result.isResult()) {
+                                    Intent intent = new Intent(LoginActivity.this, MainMapActivity.class);
+                                    if (UserAccountHelper.getIntance().getUserType() == AppConst.UserType.FLYER) {
+                                        intent.putExtra("IsFlyer", true);
+                                    }else{
+                                        intent.putExtra("IsFlyer", false);
+                                    }
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + result.getMessage());
+                                    UserAccountHelper.getIntance().setSecureKey("");
+                                    Login_Main.setVisibility(View.VISIBLE);
+                                    Login_Session.setVisibility(View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                ToastHelper.showShortToast("Đăng nhập thất bại!\nLỗi: " + e.getMessage());
+                                UserAccountHelper.getIntance().setSecureKey("");
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                v_loading.setVisibility(View.GONE);
+                            }
+                        });
+        disposable.add(disposableCheckKey);
     }
 
     private void LoginWithSession(){
@@ -340,27 +345,37 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void LoadingConfig() {
-        if (UserAccountHelper.getIntance().getSecureKey().equals(""))
-            return;
-        DataServiceProvider<PageResultDTO<ConfigDTO>> GetListConfig = new DataServiceProvider<>(new TypeToken<PageResultDTO<ConfigDTO>>() {
-        }.getType());
-        GetListConfig.setListener(new DataServiceProvider.OnListenerReponse<PageResultDTO<ConfigDTO>>() {
-            @Override
-            public void onSuccess(PageResultDTO<ConfigDTO> responseData) {
-                if (responseData.Result) {
-                    if (responseData.Items != null)
-                        UserAccountHelper.getIntance().updateConfig(responseData.Items);
-                }
-            }
+        if (UserAccountHelper.getIntance().getSecureKey().equals("")) return;
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast(errorMessage);
-            }
-        });
-        GetListConfig.getData(FunctionConst.GetListConfig,
-                AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().GetListConfig(0, 99, ""));
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("pageIndex", 0);
+        param.put("pageSize", 99);
+        param.put("key", "");
+
+        Observable<ApiListResult<Config>> getConfig = ApiUtils.getAPIBase().getConfig(param);
+        Disposable disposableGetConfig =
+                getConfig.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiListResult<Config>>() {
+                            @Override
+                            public void onNext(ApiListResult<Config> result) {
+                                if (result.Result) {
+                                    if (result.Items != null)
+                                        UserAccountHelper.getIntance().updateConfig(result.Items);
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Toast.makeText(LoginActivity.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onComplete() {
+
+                            }
+                        });
+        disposable.add(disposableGetConfig);
     }
 
     public void setFullScreen() {

@@ -14,7 +14,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -52,7 +51,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.ui.IconGenerator;
 
 import java.util.ArrayList;
@@ -71,7 +69,6 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.R;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.common.FunctionConst;
 import vn.dmcl.eagleeyes.customView.DialogPhoto;
 import vn.dmcl.eagleeyes.customView.DrawerFragment;
 import vn.dmcl.eagleeyes.data.dto.Area;
@@ -79,12 +76,10 @@ import vn.dmcl.eagleeyes.data.dto.AreaFlyer;
 import vn.dmcl.eagleeyes.data.dto.DCheckManageDTO;
 import vn.dmcl.eagleeyes.data.dto.DCheckManageFlyerDTO;
 import vn.dmcl.eagleeyes.data.dto.FlyerLog;
-import vn.dmcl.eagleeyes.data.dto.LocationDTO;
+import vn.dmcl.eagleeyes.data.dto.Location;
 import vn.dmcl.eagleeyes.data.dto.ApiResult;
 import vn.dmcl.eagleeyes.data.remote.ApiUtils;
-import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DateTimeHelper;
-import vn.dmcl.eagleeyes.helper.JsonHelper;
 import vn.dmcl.eagleeyes.helper.MarkerHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
@@ -239,7 +234,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         googleMap.getUiSettings().setMapToolbarEnabled(false);
 
         if (locationService != null) {
-            Location last = locationService.getLastLocation();
+            android.location.Location last = locationService.getLastLocation();
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(last.getLatitude(), last.getLongitude())));
         } else {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(10.754252, 106.664683), 15));
@@ -254,8 +249,8 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             @SuppressLint("SetTextI18n")
             @Override
             public View getInfoContents(Marker marker) {
-                if (marker.getTag() instanceof LocationDTO) {
-                    LocationDTO locationDTO = (LocationDTO) marker.getTag();
+                if (marker.getTag() instanceof Location) {
+                    Location location = (Location) marker.getTag();
                     @SuppressLint("InflateParams") View view = getLayoutInflater().inflate(R.layout.map_marker_popupinfo, null);
                     TextView tv_title = view.findViewById(R.id.tv_title);
                     TextView tv_content = view.findViewById(R.id.tv_content);
@@ -265,7 +260,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                     else if (currentDMarker.indexOf(marker) == currentDMarker.size() - 1)
                         tv_title.setText("Điểm kết thúc");
                     else tv_title.setText("Điểm số " + (currentDMarker.indexOf(marker) + 1));
-                    tv_content.setText("Thời gian " + DateTimeHelper.convertSecondToTimeString(locationDTO.getTime()));
+                    tv_content.setText("Thời gian " + DateTimeHelper.convertSecondToTimeString(location.getTime()));
 
                     return view;
                 }
@@ -405,7 +400,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
             return;
         }
 
-        Location selectArea = new Location("");
+        android.location.Location selectArea = new android.location.Location("");
         selectArea.setLatitude(drawerFragment.getCurrentArea().getLat());
         selectArea.setLongitude(drawerFragment.getCurrentArea().getLng());
         if (locationService.getLastLocation().distanceTo(selectArea) >
@@ -452,7 +447,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                             @Override
                             public void onError(Throwable e) {
                                 Log.e(TAG, "Error start log: " + e.getMessage());
-                                Toast.makeText(locationService, "Error start log: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainMapActivity.this, "Error start log: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -504,7 +499,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
                             @Override
                             public void onError(Throwable e) {
                                 Log.e(TAG, "onError: " + e.getMessage());
-                                Toast.makeText(locationService, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainMapActivity.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -560,65 +555,64 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     }
 
     private void displayMapPath(final FlyerLog flyerLog) {
-        if (flyerLog.getLocation() == null)
-            return;
+        if (flyerLog.getLocation() == null) return;
         // Vẽ path của flyer
         PolylineOptions polylineOptions = new PolylineOptions().width(4f).color(Color.argb(255, 18, 103, 255));
 
-        for (LocationDTO item : flyerLog.getLocation())
+        for (Location item : flyerLog.getLocation()) {
             polylineOptions.add(new LatLng(item.getLat(), item.getLng()));
+        }
+
         currentPolyline = googleMap.addPolyline(polylineOptions);
         // Vẽ các marker location flyer đã đi qua
         //double scalePercent = 10f;
         IconGenerator iconFactory = new IconGenerator(this);
         iconFactory.setStyle(R.style.iconGenText);
-        /*for (int i = 0; i < flyerLog.getLocation().size(); i++)
-            if (flyerLog.getLocation().get(i).getTime() > 1000)
-                scalePercent = 50f;*/
+
         for (int i = 0; i < flyerLog.getLocation().size(); i++) {
             String title;
-            LocationDTO locationDTO = flyerLog.getLocation().get(i);
+            Location location = flyerLog.getLocation().get(i);
             if (i == 0) {
                 title = "Điểm bắt đầu";
                 currentDMarker.add(googleMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(locationDTO.getLat(), locationDTO.getLng()))
+                        .position(new LatLng(location.getLat(), location.getLng()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_start))
                         .title(title)
                         .anchor(0.5f, 0.5f)
-                        .snippet("Thời gian: " + Math.round(locationDTO.getTime()))));
+                        .snippet("Thời gian: " + Math.round(location.getTime()))));
             } else if (i == flyerLog.getLocation().size() - 1) {
                 title = "Điểm kết thúc";
                 currentDMarker.add(googleMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(locationDTO.getLat(), locationDTO.getLng()))
+                        .position(new LatLng(location.getLat(), location.getLng()))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_end))
                         .title(title)
                         .anchor(0.5f, 0.5f)
-                        .snippet("Thời gian: " + Math.round(locationDTO.getTime()))));
+                        .snippet("Thời gian: " + Math.round(location.getTime()))));
             } else {
                 BitmapDescriptor bitmapDescriptor;
-                if (locationDTO.getTime() < 10 * 60)
+                if (location.getTime() < 10 * 60)
                     bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_1);
-                else if (locationDTO.getTime() < 30 * 60)
+                else if (location.getTime() < 30 * 60)
                     bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_2);
-                else if (locationDTO.getTime() < 60 * 60)
+                else if (location.getTime() < 60 * 60)
                     bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_3);
                 else
                     bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_4);
                 title = "Điểm số " + i + 1;
                 currentDMarker.add(googleMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(locationDTO.getLat(), locationDTO.getLng()))
+                        .position(new LatLng(location.getLat(), location.getLng()))
                         .icon(bitmapDescriptor)
                         .title(title)
                         .anchor(0.5f, 0.5f)
-                        .snippet("Thời gian: " + Math.round(locationDTO.getTime()))));
+                        .snippet("Thời gian: " + Math.round(location.getTime()))));
             }
-            currentDMarker.get(currentDMarker.size() - 1).setTag(locationDTO);
+            currentDMarker.get(currentDMarker.size() - 1).setTag(location);
             currentDMarker.get(currentDMarker.size() - 1).setVisible(false);
 
 
             Marker text = googleMap.addMarker(new MarkerOptions().
-                    icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(DateTimeHelper.convertSecondToTimeString(locationDTO.getTime()))))
-                    .position(new LatLng(locationDTO.getLat(), locationDTO.getLng()))
+                    icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(DateTimeHelper.convertSecondToTimeString(location.getTime()))))
+                    .position(new LatLng(location.getLat(), location.getLng()))
                     .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV()));
             text.setAlpha(0);
             MarkersText.add(text);
@@ -630,10 +624,10 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     private void beginAnimation() {
         if (count == currentDMarker.size())
             return;
-        LocationDTO locationDTO = (LocationDTO) currentDMarker.get(count).getTag();
+        Location location = (Location) currentDMarker.get(count).getTag();
         currentDMarker.get(count).setVisible(true);
         MarkerHelper.animate(googleMap,
-                new LatLng(locationDTO != null ? locationDTO.getLat() : 0, locationDTO != null ? locationDTO.getLng() : 0),
+                new LatLng(location != null ? location.getLat() : 0, location != null ? location.getLng() : 0),
                 currentDMarker.get(count));
         count++;
         new Handler().postDelayed(this::beginAnimation, 100);
@@ -675,67 +669,86 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
 
     private void LoadDCheckData() {
         v_loading.setVisibility(View.VISIBLE);
-        DataServiceProvider<ApiResult<DCheckManageDTO>> GetListUser = new DataServiceProvider<>(new TypeToken<ApiResult<DCheckManageDTO>>() {
-        }.getType());
-        GetListUser.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<DCheckManageDTO>>() {
-            @Override
-            public void onSuccess(ApiResult<DCheckManageDTO> responseData) {
-                if (responseData.isResult()) {
-                    ll_marker_des.setVisibility(View.VISIBLE);
-                    if (responseData.getData().getFlyer().size() != 0) {
-                        dCheckManageFlyerDTOs = responseData.getData().getFlyer();
-                        drawerFragment.updateDCheckData(responseData.getData().getFlyer());
-                        new Handler().postDelayed(new Runnable() {
+
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("key", UserAccountHelper.getIntance().getSecureKey());
+        Observable<ApiResult<DCheckManageDTO>> getListUser = ApiUtils.getAPIBase().getListUser(param);
+
+        Disposable disposableListUser =
+                getListUser.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiResult<DCheckManageDTO>>() {
                             @Override
-                            public void run() {
-                                displayAreasInMap();
+                            public void onNext(ApiResult<DCheckManageDTO> result) {
+                                if (result.isResult()) {
+                                    ll_marker_des.setVisibility(View.VISIBLE);
+                                    if (result.getData().getFlyer().size() != 0) {
+                                        dCheckManageFlyerDTOs = result.getData().getFlyer();
+                                        drawerFragment.updateDCheckData(result.getData().getFlyer());
+                                        new Handler().postDelayed(() -> displayAreasInMap(), 500);
+                                    }
+                                }else {
+                                    ToastHelper.showShortToast(result.getMessage());
+                                }
                             }
-                        }, 500);
-                    }
-                } else ToastHelper.showShortToast(responseData.getMessage());
-                v_loading.setVisibility(View.GONE);
-            }
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast(errorMessage);
-                v_loading.setVisibility(View.GONE);
-            }
-        });
-        GetListUser.getData(FunctionConst.GetListUser, AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().GetListUser(UserAccountHelper.getIntance().getSecureKey()));
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: " + e.getMessage());
+                                Toast.makeText(MainMapActivity.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
 
+                            @Override
+                            public void onComplete() {
+                                v_loading.setVisibility(View.GONE);
+                            }
+                        });
+        disposable.add(disposableListUser);
     }
 
     private void LoadFlyerArea(Area areaDTO) {
         v_loading.setVisibility(View.VISIBLE);
-        DataServiceProvider<ApiResult<FlyerLog>> GetListLocation = new DataServiceProvider<>(new TypeToken<ApiResult<FlyerLog>>() {
-        }.getType());
-        GetListLocation.setListener(new DataServiceProvider.OnListenerReponse<ApiResult<FlyerLog>>() {
-            @Override
-            public void onSuccess(ApiResult<FlyerLog> responseData) {
-                if (responseData.isResult()) {
-                    if (responseData.getData() != null) {
-                        displayMapPath(responseData.getData());
-                    }
-                } else ToastHelper.showShortToast(responseData.getMessage());
-                v_loading.setVisibility(View.GONE);
-            }
 
-            @Override
-            public void onFailure(String errorMessage) {
-                ToastHelper.showShortToast(errorMessage);
-                v_loading.setVisibility(View.GONE);
-            }
-        });
-        GetListLocation.getData(FunctionConst.GetListLocation, AppConst.AsyncMethod.GET,
-                JsonHelper.getIntance().GetListLocation(areaDTO.getId(), UserAccountHelper.getIntance().getSecureKey(), dCheckManageFlyerDTOs.get(0).getFlyerId()));
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("key", UserAccountHelper.getIntance().getSecureKey());
+        param.put("areaId", areaDTO.getId());
+        param.put("flyerId", dCheckManageFlyerDTOs.get(0).getFlyerId());
+
+        Observable<ApiResult<FlyerLog>> getListLocation = ApiUtils.getAPIBase().getListLocation(param);
+        Disposable disposableListLocation =
+                getListLocation.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiResult<FlyerLog>>() {
+                            @Override
+                            public void onNext(ApiResult<FlyerLog> result) {
+                                if (result.isResult()) {
+                                    if (result.getData() != null) {
+                                        displayMapPath(result.getData());
+                                    }
+                                } else {
+                                    ToastHelper.showShortToast(result.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: " + e.getMessage());
+                                Toast.makeText(MainMapActivity.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                v_loading.setVisibility(View.GONE);
+                            }
+                        });
+        disposable.add(disposableListLocation);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AppConst.CameraRequestCode && resultCode == Activity.RESULT_OK) {
             try {
+                if (data.getExtras() == null) return;
                 Bitmap bitmap = (Bitmap) data.getExtras().get("data");
                 DialogPhoto dialogPhoto = DialogPhoto.getInstance(this, true);
                 dialogPhoto.show();
@@ -781,6 +794,7 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
     protected void onStop() {
         super.onStop();
         disposable.clear();
+        unbindService(mConnection);
     }
 
     private void sendNotification(String message) {
@@ -813,6 +827,5 @@ public class MainMapActivity extends BaseActivity implements OnMapReadyCallback,
         if (isFlyer)
             LoadFlyerData();
         else LoadDCheckData();
-
     }
 }

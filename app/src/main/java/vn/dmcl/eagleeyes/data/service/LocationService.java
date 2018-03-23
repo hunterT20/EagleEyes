@@ -27,23 +27,20 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.gson.reflect.TypeToken;
 
 import java.util.HashMap;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import vn.dmcl.eagleeyes.common.AppConst;
-import vn.dmcl.eagleeyes.common.FunctionConst;
 import vn.dmcl.eagleeyes.data.dto.FlyerLog;
 import vn.dmcl.eagleeyes.data.dto.ApiResult;
 import vn.dmcl.eagleeyes.data.remote.ApiUtils;
-import vn.dmcl.eagleeyes.helper.DataServiceProvider;
 import vn.dmcl.eagleeyes.helper.DialogHelper;
-import vn.dmcl.eagleeyes.helper.JsonHelper;
 import vn.dmcl.eagleeyes.helper.ToastHelper;
 import vn.dmcl.eagleeyes.helper.UserAccountHelper;
 import vn.dmcl.eagleeyes.view.BaseActivity;
@@ -165,29 +162,30 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         param.put("logId", UserAccountHelper.getIntance().getLogId());
         param.put("lat", getLastLocation().getLatitude());
         param.put("lng", getLastLocation().getLongitude());
+
         Observable<ApiResult<FlyerLog>> sentLocation = ApiUtils.getAPIBase().sendLocation(param);
+        Disposable disposableSentLocation =
+                sentLocation.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<ApiResult<FlyerLog>>() {
+                            @Override
+                            public void onNext(ApiResult<FlyerLog> result) {
+                                if (!result.isResult())
+                                    ToastHelper.showShortToast("Lỗi: " + result.getMessage());
+                            }
 
-        sentLocation.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableObserver<ApiResult<FlyerLog>>() {
-                    @Override
-                    public void onNext(ApiResult<FlyerLog> result) {
-                        if (!result.isResult())
-                            ToastHelper.showShortToast("Lỗi: " + result.getMessage());
-                    }
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "Sent Location error: " + e.getMessage());
+                                Toast.makeText(LocationService.this, "Sent Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "Sent Location error: " + e.getMessage());
-                        Toast.makeText(LocationService.this, "Sent Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                            @Override
+                            public void onComplete() {
 
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-
+                            }
+                        });
+        disposable.add(disposableSentLocation);
         sentRealTime();
     }
 
@@ -199,26 +197,27 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         String phone = UserAccountHelper.getIntance().getPhoneNumber();
         String branch = "";
         Observable<Object> sentRealTimeLocation = ApiUtils.getAPIMap().sentRealTimeLocation(id, lat, log, name, phone, branch);
+        Disposable disposableSentRealTime =
+                sentRealTimeLocation.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableObserver<Object>() {
+                            @Override
+                            public void onNext(Object o) {
+                                Log.e(TAG, "onNext: " + "Success");
+                            }
 
-        sentRealTimeLocation.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new DisposableObserver<Object>() {
-                    @Override
-                    public void onNext(Object o) {
-                        Log.e(TAG, "onNext: " + "Success");
-                    }
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.e(TAG, "onError: " + e.getMessage());
+                                Toast.makeText(LocationService.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "onError: " + e.getMessage());
-                        Toast.makeText(LocationService.this, "Xảy ra lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                            @Override
+                            public void onComplete() {
 
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
+                            }
+                        });
+        disposable.add(disposableSentRealTime);
     }
 
     // tinh vi tri cuoi cung thay doi cua GPS hay mang

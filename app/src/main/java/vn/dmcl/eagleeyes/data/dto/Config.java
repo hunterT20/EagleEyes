@@ -1,6 +1,6 @@
 package vn.dmcl.eagleeyes.data.dto;
 
-public class ConfigDTO {
+public class Config {
     private String Id;
     private String Name;
     private String Value;

@@ -94,13 +94,10 @@ public class MarkerHelper {
         final LatLng startPosition = marker.getPosition();
 
         ValueAnimator valueAnimator = new ValueAnimator();
-        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float v = animation.getAnimatedFraction();
-                LatLng newPosition = latLngInterpolator.interpolate(v, startPosition, finalPosition);
-                marker.setPosition(newPosition);
-            }
+        valueAnimator.addUpdateListener(animation -> {
+            float v = animation.getAnimatedFraction();
+            LatLng newPosition = latLngInterpolator.interpolate(v, startPosition, finalPosition);
+            marker.setPosition(newPosition);
         });
         valueAnimator.setFloatValues(0, 1); // Ignored.
         valueAnimator.setDuration(3000);
@@ -109,12 +106,7 @@ public class MarkerHelper {
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public static void animateMarkerToICS(Marker marker, LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
-        TypeEvaluator<LatLng> typeEvaluator = new TypeEvaluator<LatLng>() {
-            @Override
-            public LatLng evaluate(float fraction, LatLng startValue, LatLng endValue) {
-                return latLngInterpolator.interpolate(fraction, startValue, endValue);
-            }
-        };
+        TypeEvaluator<LatLng> typeEvaluator = latLngInterpolator::interpolate;
         Property<Marker, LatLng> property = Property.of(Marker.class, LatLng.class, "position");
         ObjectAnimator animator = ObjectAnimator.ofObject(marker, property, typeEvaluator, finalPosition);
         animator.setDuration(3000);
