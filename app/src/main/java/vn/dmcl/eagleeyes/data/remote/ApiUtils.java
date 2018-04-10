@@ -7,7 +7,7 @@ public class ApiUtils {
 
     private static final String BASE_URL = "http://112.78.12.251:12345/api/";
 
-    private static final String MAP_REALTIME_URL = "https://flyerdmcl.000webhostapp.com";
+    private static final String MAP_REALTIME_URL = "https://eagleeyerealtime.herokuapp.com/";
 
     public static ApiService getAPIBase() {
         return RetrofitClient.getClientBase(BASE_URL).create(ApiService.class);

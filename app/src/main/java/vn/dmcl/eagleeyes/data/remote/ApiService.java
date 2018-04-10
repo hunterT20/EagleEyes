@@ -29,7 +29,7 @@ public interface ApiService {
     @POST("GetListArea")
     Observable<ApiResult<AreaFlyer>> getListArea(@Body HashMap<String,String> param);
 
-    @GET("/")
+    @GET("sendlocation")
     Observable<Object> sentRealTimeLocation(
             @Query("id") String id,
             @Query("lat") Double lat,
